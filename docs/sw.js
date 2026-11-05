@@ -1,5 +1,5 @@
 // App shell cache: serve from cache, refresh in the background. Bump VERSION on each release.
-const VERSION = "ded-v1";
+const VERSION = "ded-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./vendor/anthropic.mjs", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
