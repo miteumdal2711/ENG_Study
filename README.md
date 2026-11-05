@@ -21,3 +21,10 @@ Claude Code 클라우드 세션 테스트용 저장소입니다
 - 기록: 휴대폰 브라우저에 저장되며 JSON으로 내보내기·가져오기를 할 수 있습니다.
 - 홈 화면에 설치할 수 있는 PWA입니다. `vendor/anthropic.mjs`는 `@anthropic-ai/sdk` 0.133.0을 브라우저용으로 묶은 파일입니다.
 - 배포: GitHub Pages에서 `main` 브랜치의 `/docs` 폴더를 지정합니다.
+
+## Haiku 버전 (docs/haiku/)
+
+- 주소: https://miteumdal2711.github.io/ENG_Study/haiku/
+- 본인 Anthropic API 키로 **Claude Haiku 5.5**를 불러 앱 안에서 바로 피드백을 받습니다. 피드백 1회에 대략 1~3원입니다.
+- 이름(English Drill Haiku), 청록색 아이콘, 주소, 저장된 기록이 기본 버전과 따로입니다. 홈 화면에 별도 앱으로 설치됩니다.
+- 기본 버전(`docs/index.html`)을 고친 뒤 `python3 tools/build_haiku.py`를 실행하면 Haiku 버전이 다시 만들어집니다.

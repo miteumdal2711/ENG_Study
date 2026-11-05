@@ -1,0 +1,1432 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daily English Drill Haiku</title>
+<meta name="description" content="TOEIC 800 수준의 영어 말하기·쓰기 매일 연습">
+<meta name="theme-color" content="#0F766E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+html { padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+/* Layout: one-column phone app styled like a TOEIC answer sheet (OMR pink rules, filled bubbles), fixed bottom tab bar. */
+:root {
+  --paper: #F6F7FA;
+  --surface: #FFFFFF;
+  --ink: #1B2333;
+  --muted: #5D6679;
+  --rule: #A7D8D3;
+  --soft: #E6F4F2;
+  --omr: #0F766E;
+  --on-omr: #FFFFFF;
+  --ok: #1E8558;
+  --ok-soft: #E3F4EB;
+  --warn: #9A6408;
+  --line: #E3E6EE;
+  --shadow: 0 1px 2px rgba(27,35,51,.06), 0 6px 20px rgba(27,35,51,.05);
+  --f-display: "Bricolage Grotesque", "IBM Plex Sans KR", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F131B; --surface: #171C27; --ink: #E8EBF2; --muted: #9AA3B6;
+    --rule: #1F4A47; --soft: #10262A; --omr: #3CC7B8; --on-omr: #06201D;
+    --ok: #4CC98E; --ok-soft: #12291E; --warn: #E2AE4A; --line: #262D3B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F131B; --surface: #171C27; --ink: #E8EBF2; --muted: #9AA3B6;
+  --rule: #1F4A47; --soft: #10262A; --omr: #3CC7B8; --on-omr: #06201D;
+  --ok: #4CC98E; --ok-soft: #12291E; --warn: #E2AE4A; --line: #262D3B;
+  --shadow: 0 1px 2px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--f-body); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--omr); outline-offset: 2px; }
+
+.app { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px calc(92px + env(safe-area-inset-bottom, 0px)); }
+
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--rule); margin-bottom: 18px; }
+.brand { font-family: var(--f-display); font-weight: 800; font-size: 1.45rem; letter-spacing: -.02em; line-height: 1.1; }
+.brand small { display: block; font-family: var(--f-body); font-weight: 500; font-size: .78rem; color: var(--muted); letter-spacing: 0; margin-top: 3px; }
+.level-chip { font-family: var(--f-mono); font-size: .75rem; font-weight: 600; color: var(--omr); border: 1.5px solid var(--omr); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+
+section.tab { display: flex; flex-direction: column; gap: 16px; }
+h2 { font-family: var(--f-display); font-weight: 800; font-size: 1.25rem; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+h3 { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--omr); margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+
+.sheet { background: var(--surface); border: 1.5px solid var(--rule); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--rule); }
+.qnum { font-family: var(--f-mono); font-size: .75rem; font-weight: 600; color: var(--muted); }
+
+/* OMR bubbles */
+.bubbles { display: flex; gap: 6px; flex-wrap: wrap; }
+.bubble { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--omr); display: grid; place-items: center; font-size: .72rem; font-weight: 600; color: var(--omr); background: transparent; }
+.bubble.on { background: var(--omr); color: var(--on-omr); }
+.bubble.today { box-shadow: 0 0 0 3px var(--soft); }
+.bubble.sm { width: 18px; height: 18px; font-size: 0; }
+button.bubble { cursor: pointer; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat b { font-family: var(--f-mono); font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat span { font-size: .75rem; color: var(--muted); }
+
+.task-card { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.task-card .tt { min-width: 0; }
+.task-card .tt p { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.done-tag { font-size: .75rem; font-weight: 700; color: var(--ok); background: var(--ok-soft); border-radius: 999px; padding: 2px 9px; }
+
+.btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 600; cursor: pointer; background: var(--omr); color: var(--on-omr); min-height: 44px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.quiet { background: var(--soft); color: var(--omr); }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1 1 auto; }
+
+.prompt-text { font-size: 1rem; line-height: 1.65; white-space: pre-wrap; }
+.passage { background: var(--soft); border-left: 3px solid var(--omr); border-radius: 8px; padding: 12px 14px; font-size: 1.02rem; line-height: 1.75; }
+.passage .miss { text-decoration: underline wavy var(--omr); text-underline-offset: 4px; font-weight: 600; }
+.passage .hit { color: var(--ink); }
+
+.timer { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
+.timer .clock { font-family: var(--f-mono); font-size: 2.3rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; grid-row: span 2; }
+.timer .phase { font-size: .8rem; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.timer .phase.live { color: var(--omr); }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--omr); transition: width .25s linear; }
+
+textarea { width: 100%; min-height: 150px; resize: vertical; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; background: var(--paper); line-height: 1.6; font-size: 16px; }
+textarea:focus { border-color: var(--omr); outline: none; }
+.meta-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hint { font-size: .82rem; color: var(--muted); background: var(--paper); border-radius: 10px; padding: 8px 10px; border: 1px dashed var(--line); }
+
+/* Feedback */
+.fb { display: flex; flex-direction: column; gap: 14px; }
+.score-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.score-num { font-family: var(--f-mono); font-size: 1.6rem; font-weight: 600; }
+.score-num small { font-size: .9rem; color: var(--muted); }
+.corr { display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.corr li { border-top: 1px dashed var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.corr .from { text-decoration: line-through; text-decoration-color: var(--omr); color: var(--muted); }
+.corr .to { font-weight: 600; color: var(--ok); }
+.model { background: var(--ok-soft); border-radius: 10px; padding: 12px 14px; line-height: 1.7; }
+.expr { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.expr li { display: flex; flex-direction: column; }
+.expr li b { font-weight: 600; }
+.status { font-size: .88rem; color: var(--muted); }
+.status.err { color: var(--omr); }
+
+/* Log */
+.log-list { display: flex; flex-direction: column; gap: 10px; }
+details.entry { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+details.entry summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+details.entry summary::-webkit-details-marker { display: none; }
+.kind { font-size: .72rem; font-weight: 700; border-radius: 6px; padding: 2px 7px; background: var(--soft); color: var(--omr); }
+.kind.write { background: var(--ok-soft); color: var(--ok); }
+.entry .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.entry .sc { font-family: var(--f-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.entry .body { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: .9rem; }
+.entry .ans { white-space: pre-wrap; background: var(--paper); border-radius: 8px; padding: 8px 10px; }
+.empty { text-align: center; padding: 28px 12px; color: var(--muted); border: 1.5px dashed var(--rule); border-radius: var(--r); }
+
+/* Settings */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .lbl { font-weight: 600; font-size: .9rem; }
+input[type="time"] { font-family: var(--f-mono); font-size: 1.6rem; font-weight: 600; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; background: var(--paper); width: 100%; max-width: 220px; }
+.seg { display: flex; border: 1.5px solid var(--omr); border-radius: 12px; overflow: hidden; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 10px 6px; font-weight: 600; color: var(--omr); cursor: pointer; font-family: var(--f-mono); }
+.seg button.on { background: var(--omr); color: var(--on-omr); }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+ol.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: .9rem; }
+.banner { background: var(--soft); border: 1.5px solid var(--rule); border-radius: 12px; padding: 10px 12px; font-size: .9rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.banner button { white-space: nowrap; }
+
+/* Tab bar */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1.5px solid var(--rule); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+nav.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
+nav.tabs button { border: 0; background: transparent; padding: 9px 2px 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: pointer; min-height: 56px; }
+nav.tabs button svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav.tabs button[aria-current="page"] { color: var(--omr); }
+
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+/* Recorder */
+.rec-row { display: flex; align-items: center; gap: 14px; }
+.mic { flex: none; width: 72px; height: 72px; border-radius: 50%; border: 0; background: var(--omr); color: var(--on-omr); display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 0 6px var(--soft); }
+.mic svg { width: 30px; height: 30px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mic.live { animation: pulse 1.4s ease-in-out infinite; }
+.mic.live .i-mic { display: none; }
+.mic:not(.live) .i-stop { display: none; }
+.mic .i-stop { fill: currentColor; stroke: none; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 6px var(--soft); } 50% { box-shadow: 0 0 0 14px var(--soft); } }
+.rec-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rec-info b { font-size: 1rem; }
+.interim { font-size: .9rem; color: var(--muted); font-style: italic; min-height: 1.4em; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: .88rem; }
+.check input { width: 20px; height: 20px; accent-color: var(--omr); margin: 1px 0 0; flex: none; }
+audio { width: 100%; }
+.handoff { display: flex; flex-direction: column; gap: 10px; background: var(--soft); border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px; }
+.handoff textarea { min-height: 120px; font-size: 13px; }
+.score-in { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.score-in label { font-weight: 600; font-size: .9rem; }
+.score-in input { width: 72px; font-family: var(--f-mono); font-size: 1.1rem; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px; background: var(--surface); }
+input[type="password"], input[type="text"].key { width: 100%; font-family: var(--f-mono); font-size: .95rem; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--paper); }
+@media (prefers-reduced-motion: reduce) { .mic.live { animation: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">English Drill Haiku<small id="today-label">오늘</small></div>
+    <span class="level-chip" id="level-chip">TOEIC 800</span>
+  </header>
+
+  <!-- 오늘 -->
+  <section class="tab" id="tab-today">
+    <div class="banner" id="key-banner" hidden>
+      <span>앱에서 바로 피드백을 받으려면 Claude API 키를 넣어 주세요.</span>
+      <button class="btn quiet" type="button" data-go="alarm">키 넣기</button>
+    </div>
+    <div class="banner" id="notice" hidden>
+      <span id="notice-text"></span>
+      <button class="btn quiet" type="button" id="notice-close">닫기</button>
+    </div>
+    <div class="banner" id="alarm-banner" hidden>
+      <span id="alarm-banner-text"></span>
+      <button class="btn quiet" type="button" data-go="speak">지금 시작</button>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><h3>이번 주 출석</h3><span class="qnum" id="week-range"></span></div>
+      <div class="bubbles" id="week-bubbles" aria-label="이번 주 연습한 날"></div>
+      <div class="stats">
+        <div class="stat"><b id="st-streak">0</b><span>연속 일수</span></div>
+        <div class="stat"><b id="st-total">0</b><span>총 연습</span></div>
+        <div class="stat"><b id="st-avg">–</b><span>최근 10회 평균</span></div>
+      </div>
+    </div>
+
+    <div class="sheet task-card">
+      <div class="tt">
+        <h3>오늘의 말하기 <span class="done-tag" id="speak-done" hidden>완료</span></h3>
+        <p id="today-speak-title"></p>
+      </div>
+      <button class="btn" type="button" data-go="speak">시작</button>
+    </div>
+
+    <div class="sheet task-card">
+      <div class="tt">
+        <h3>오늘의 쓰기 <span class="done-tag" id="write-done" hidden>완료</span></h3>
+        <p id="today-write-title"></p>
+      </div>
+      <button class="btn" type="button" data-go="write">시작</button>
+    </div>
+
+    <div class="sheet task-card">
+      <div class="tt">
+        <h3>매일 알람</h3>
+        <p id="alarm-summary" class="muted"></p>
+      </div>
+      <button class="btn ghost" type="button" data-go="alarm">설정</button>
+    </div>
+  </section>
+
+  <!-- 말하기 -->
+  <section class="tab" id="tab-speak" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="sp-type"></h3><span class="qnum" id="sp-limits"></span></div>
+      <h2 id="sp-title"></h2>
+      <p class="prompt-text" id="sp-text"></p>
+      <div class="passage" id="sp-passage" hidden></div>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" id="sp-listen">원문 듣기</button>
+        <button class="btn ghost" type="button" id="sp-next">다른 문제</button>
+        <button class="btn ghost" type="button" id="sp-ai">AI 새 문제</button>
+      </div>
+      <p class="status" id="sp-task-status" hidden></p>
+    </div>
+
+    <div class="sheet">
+      <div class="timer">
+        <div class="clock" id="sp-clock">0:00</div>
+        <div class="phase" id="sp-phase">대기</div>
+        <div class="bar"><i id="sp-bar"></i></div>
+      </div>
+      <div class="rec-row">
+        <button class="mic" type="button" id="sp-mic" aria-label="녹음 시작">
+          <svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
+          <svg class="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+        <div class="rec-info">
+          <b id="rec-title">바로 녹음하기</b>
+          <span class="small muted" id="rec-sub">누르면 답변 시간이 시작되고 말한 내용이 받아쓰기됩니다.</span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" type="button" id="sp-start">준비 시간부터 시작</button>
+        <button class="btn ghost" type="button" id="sp-stop" disabled>정지</button>
+      </div>
+      <label class="check"><input type="checkbox" id="keep-audio"> <span>내 목소리도 녹음해서 다시 듣기<br><span class="small muted">일부 휴대폰은 켜면 받아쓰기가 안 돼요. 받아쓰기가 안 되면 자동으로 꺼져요.</span></span></label>
+      <p class="interim" id="sp-interim"></p>
+      <textarea id="sp-answer" placeholder="녹음하면 말한 내용이 여기에 영어로 받아쓰기됩니다" spellcheck="false" autocapitalize="sentences"></textarea>
+      <div class="meta-row"><span id="sp-words">0 단어</span><span id="sp-wpm"></span></div>
+      <audio id="sp-audio" controls hidden></audio>
+      <div class="btn-row">
+        <button class="btn" type="button" id="sp-feedback">피드백 받기 (Haiku)</button>
+        <button class="btn ghost" type="button" id="sp-claude">Claude 앱으로 피드백 (무료)</button>
+        <button class="btn ghost" type="button" id="sp-check" hidden>읽기 정확도 확인</button>
+      </div>
+      <p class="status" id="sp-status" hidden></p>
+      <div class="handoff" id="sp-handoff" hidden></div>
+    </div>
+
+    <div class="sheet" id="sp-fb-wrap" hidden><div class="fb" id="sp-fb"></div></div>
+  </section>
+
+  <!-- 쓰기 -->
+  <section class="tab" id="tab-write" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="wr-type"></h3><span class="qnum" id="wr-limits"></span></div>
+      <h2 id="wr-title"></h2>
+      <p class="prompt-text" id="wr-text"></p>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" id="wr-next">다른 문제</button>
+        <button class="btn ghost" type="button" id="wr-ai">AI 새 문제</button>
+      </div>
+      <p class="status" id="wr-task-status" hidden></p>
+    </div>
+
+    <div class="sheet">
+      <div class="timer">
+        <div class="clock" id="wr-clock">0:00</div>
+        <div class="phase" id="wr-phase">대기</div>
+        <div class="bar"><i id="wr-bar"></i></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" type="button" id="wr-start">타이머 시작</button>
+        <button class="btn ghost" type="button" id="wr-stop" disabled>정지</button>
+      </div>
+      <textarea id="wr-answer" placeholder="영어로 작성하세요" spellcheck="false" style="min-height:220px"></textarea>
+      <div class="meta-row"><span id="wr-words">0 단어</span><span id="wr-target"></span></div>
+      <div class="btn-row">
+        <button class="btn" type="button" id="wr-feedback">첨삭 받기 (Haiku)</button>
+        <button class="btn ghost" type="button" id="wr-claude">Claude 앱으로 첨삭 (무료)</button>
+      </div>
+      <p class="status" id="wr-status" hidden></p>
+      <div class="handoff" id="wr-handoff" hidden></div>
+    </div>
+
+    <div class="sheet" id="wr-fb-wrap" hidden><div class="fb" id="wr-fb"></div></div>
+  </section>
+
+  <!-- 기록 -->
+  <section class="tab" id="tab-log" hidden>
+    <h2>연습 기록</h2>
+    <div class="log-list" id="log-list"></div>
+  </section>
+
+  <!-- 설정 -->
+  <section class="tab" id="tab-alarm" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><h3>Claude API 키</h3><span class="qnum" id="key-state"></span></div>
+      <p class="small">이 버전은 <b>Claude Haiku 5.5</b>로 앱 안에서 바로 피드백을 받아요. 키를 넣으면 AI 새 문제도 만들 수 있어요.</p>
+      <div class="field">
+        <label for="api-key">AI 피드백과 새 문제에 쓰는 키</label>
+        <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="btn-row">
+        <button class="btn" type="button" id="key-save">저장하고 확인</button>
+        <button class="btn ghost" type="button" id="key-clear">지우기</button>
+      </div>
+      <p class="status" id="key-status" hidden></p>
+      <ol class="steps">
+        <li><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>에 로그인해 <b>Create Key</b>로 키를 만듭니다.</li>
+        <li>Billing에서 크레딧을 충전하고, 월 사용 한도(Limits)를 낮게 정해 두세요.</li>
+        <li>키는 이 휴대폰 브라우저에만 저장되고 Anthropic 서버로만 보내집니다.</li>
+      </ol>
+      <p class="small muted">Claude Haiku 5.5를 써서 피드백 1회에 대략 1~3원 정도 들어요. Claude 구독과는 별도로 결제돼요.</p>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><h3>매일 알람</h3></div>
+      <div class="field">
+        <label for="alarm-time">알람 시간</label>
+        <input type="time" id="alarm-time" value="07:30">
+      </div>
+      <div class="field">
+        <span class="lbl">요일</span>
+        <div class="bubbles" id="alarm-days"></div>
+      </div>
+      <a class="btn" id="gcal-link" href="https://calendar.google.com" target="_blank" rel="noopener">Google 캘린더에 매일 알람 등록</a>
+      <ol class="steps">
+        <li>위 버튼을 누르면 반복 일정이 채워진 Google 캘린더가 열립니다. <b>저장</b>을 누르세요.</li>
+        <li>일정의 알림을 <b>"일정 시작 시"</b>로 바꾸면 정해진 시간에 휴대폰 알림이 옵니다.</li>
+        <li>알림의 링크를 누르면 이 앱이 열립니다.</li>
+      </ol>
+      <p class="small muted">웹앱은 닫혀 있을 때 스스로 소리를 낼 수 없어서 캘린더 알림을 알람으로 씁니다. 앱이 열려 있을 때는 알람 시간에 소리로도 알려 드려요.</p>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><h3>난이도</h3></div>
+      <div class="seg" id="level-seg" role="group" aria-label="목표 점수">
+        <button type="button" data-level="700">700</button>
+        <button type="button" data-level="800">800</button>
+        <button type="button" data-level="900">900</button>
+      </div>
+      <p class="small muted">피드백 기준과 AI가 만드는 새 문제의 난이도에 적용됩니다. 기본 문제은행은 800점 수준(CEFR B2)입니다.</p>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><h3>기록 백업</h3></div>
+      <p class="small muted">기록은 이 휴대폰 브라우저에만 저장됩니다. 브라우저 데이터를 지우기 전이나 휴대폰을 바꿀 때 내보내 두세요.</p>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" id="export-btn">기록 내보내기</button>
+        <button class="btn ghost" type="button" id="import-btn">가져오기</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <p class="status" id="backup-status" hidden></p>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" aria-label="메뉴">
+  <div class="in">
+    <button type="button" data-tab="today" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>오늘</button>
+    <button type="button" data-tab="speak"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></svg>말하기</button>
+    <button type="button" data-tab="write"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>쓰기</button>
+    <button type="button" data-tab="log"><svg viewBox="0 0 24 24"><circle cx="6.5" cy="7" r="2"/><circle cx="6.5" cy="17" r="2"/><path d="M11 7h8M11 17h8M11 12h8"/><circle cx="6.5" cy="12" r="2"/></svg>기록</button>
+    <button type="button" data-tab="alarm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button>
+  </div>
+</nav>
+
+<script type="module">
+  "use strict";
+  const MODEL = "claude-haiku-5-5";
+
+  // ---------- Prompt banks (TOEIC 800 / CEFR B2) ----------
+  const SPEAK = [
+    { id: "r1", type: "read", label: "Q1-2 · Read a text aloud", prep: 45, time: 45,
+      title: "비즈니스 센터 안내문 읽기",
+      text: "Read the text aloud as naturally as you can.",
+      passage: "Welcome to Harborview Business Center. Our facility offers fully equipped meeting rooms, high-speed internet, and on-site catering services. Whether you are hosting a small team discussion or a large conference, our experienced staff will ensure that everything runs smoothly. To make a reservation, please visit our Web site or speak with a representative at the front desk." },
+    { id: "o1", type: "opinion", label: "Q11 · Express an opinion", prep: 45, time: 60,
+      title: "재택근무가 더 생산적인가?",
+      text: "Do you agree or disagree with the following statement?\n\"Working from home is more productive than working in an office.\"\nUse specific reasons and examples to support your opinion." },
+    { id: "q1", type: "respond", label: "Q5-7 · Respond to questions", prep: 3, time: 30,
+      title: "온라인 쇼핑 전화 인터뷰",
+      text: "Imagine that a marketing firm is doing research in your country. You have agreed to participate in a telephone interview about online shopping.\n\nWhat kinds of products do you usually buy online, and why do you prefer buying them online rather than in a store?" },
+    { id: "s1", type: "solution", label: "Q10 · Propose a solution", prep: 45, time: 60,
+      title: "사무실 이전 문제 해결하기",
+      text: "You work in the facilities department. Listen to (read) the voice message, then respond. In your response, show that you understand the problem and propose a way to solve it.\n\n\"Hi, this is Karen Lee from accounting. We've just been told our team has to move to the fourth floor next Monday, but the new office won't have enough desks for everyone until the following week. Several of us also have client meetings on Monday. Could you call me back and suggest how we can handle this? Thanks.\"" },
+    { id: "o2", type: "opinion", label: "Q11 · Express an opinion", prep: 45, time: 60,
+      title: "연봉 vs 동료와의 관계",
+      text: "When choosing a job, which is more important: a high salary or a good relationship with coworkers? Use specific reasons and examples to support your opinion." },
+    { id: "r2", type: "read", label: "Q1-2 · Read a text aloud", prep: 45, time: 45,
+      title: "지하철 운행 변경 안내 읽기",
+      text: "Read the text aloud as naturally as you can.",
+      passage: "Attention, passengers. Due to scheduled maintenance on the Riverside Line, trains will be running every fifteen minutes instead of every five this weekend. Free shuttle buses will be available at Central, Parkside, and Union stations. We apologize for any inconvenience and thank you for your patience." },
+    { id: "q2", type: "respond", label: "Q5-7 · Respond to questions", prep: 3, time: 30,
+      title: "출퇴근 습관",
+      text: "Imagine that a local newspaper is preparing an article about commuting. You have agreed to answer some questions.\n\nHow do you usually get to work or school, and how long does it take? Is there anything you would like to change about your commute?" },
+    { id: "o3", type: "opinion", label: "Q11 · Express an opinion", prep: 45, time: 60,
+      title: "업무 외 교육 지원",
+      text: "Some companies offer employees free training courses in subjects outside their area of work. Do you think this is a good idea? Why or why not? Use specific reasons and examples." },
+    { id: "s2", type: "solution", label: "Q10 · Propose a solution", prep: 45, time: 60,
+      title: "배송 지연 고객 응대",
+      text: "You work in customer service at an office furniture company. Read the voice message, then respond. Show that you understand the problem and propose a way to solve it.\n\n\"Hello, my name is David Park. I ordered twelve office chairs from your company two weeks ago, and they were supposed to arrive yesterday. We have new employees starting on Thursday. The delivery hasn't come, and the tracking page hasn't been updated. Please call me back and let me know what you can do.\"" },
+    { id: "q3", type: "respond", label: "Q5-7 · Respond to questions", prep: 3, time: 30,
+      title: "친구에게 도시 추천하기",
+      text: "A friend is visiting your city for three days next month.\n\nWhich places would you recommend that your friend visit, and why?" },
+    { id: "r3", type: "read", label: "Q1-2 · Read a text aloud", prep: 45, time: 45,
+      title: "전자제품 고객센터 ARS 읽기",
+      text: "Read the text aloud as naturally as you can.",
+      passage: "Thank you for calling Greenfield Electronics. If you are calling about an existing order, please press one. For technical support with laptops, tablets, and printers, press two. To speak with a customer service representative, please stay on the line. Your call is important to us, and we will be with you shortly." },
+    { id: "o4", type: "opinion", label: "Q11 · Express an opinion", prep: 45, time: 60,
+      title: "새 기술을 배우는 가장 좋은 방법",
+      text: "What is the most effective way to learn a new skill at work: taking a class, learning from an experienced coworker, or studying on your own? Use specific reasons and examples." }
+  ];
+
+  const WRITE = [
+    { id: "e1", type: "email", label: "Q6-7 · Respond to an e-mail", minutes: 10, words: 120,
+      title: "호텔 연회 담당자에게 답장",
+      text: "FROM: Laura Simmons, Event Coordinator, Brightway Hotel\nSUBJECT: Your company's annual dinner\n\n\"Thank you for choosing Brightway Hotel for your company's annual dinner on May 18. To finalize our arrangements, could you let us know the number of guests and any special requests?\"\n\nDirections: Respond to the e-mail as the organizer. In your e-mail, give TWO pieces of information and make ONE request." },
+    { id: "es1", type: "essay", label: "Q8 · Opinion essay", minutes: 30, words: 300,
+      title: "대기업 vs 중소기업",
+      text: "Do you agree or disagree with the following statement?\n\"It is better to work for a large company than for a small one.\"\nGive reasons or examples to support your opinion." },
+    { id: "sn1", type: "sentence", label: "Q1-5 · Write sentences", minutes: 8, words: 45,
+      title: "주어진 단어로 문장 쓰기 ①",
+      text: "Write ONE sentence for each pair of words. Use both words, in any order or form.\n\nScene: a project team working late in an office.\n1) because / deadline\n2) although / expensive\n3) in order to / customers" },
+    { id: "e2", type: "email", label: "Q6-7 · Respond to an e-mail", minutes: 10, words: 120,
+      title: "인사팀 교육 프로그램 제안",
+      text: "FROM: Mark Chen, Human Resources\nSUBJECT: New training program\n\n\"We are planning to launch a new training program for employees next month, and we would like to hear from team managers. What topics would be most useful for your team?\"\n\nDirections: Respond as a team manager. Suggest TWO topics and ask ONE question." },
+    { id: "es2", type: "essay", label: "Q8 · Opinion essay", minutes: 30, words: 300,
+      title: "좋은 관리자의 가장 중요한 자질",
+      text: "What is the most important quality of a good manager? Use specific reasons and examples to support your answer." },
+    { id: "e3", type: "email", label: "Q6-7 · Respond to an e-mail", minutes: 10, words: 120,
+      title: "아파트 공사 공지에 답장",
+      text: "FROM: Riverside Apartments Management\nSUBJECT: Upcoming renovation\n\n\"The building's lobby and elevators will be renovated from June 3 to June 14. During this period, residents may experience noise and limited elevator access. Please contact us if you have any concerns.\"\n\nDirections: Respond as a resident. Describe TWO concerns and make ONE request." },
+    { id: "sn2", type: "sentence", label: "Q1-5 · Write sentences", minutes: 8, words: 45,
+      title: "주어진 단어로 문장 쓰기 ②",
+      text: "Write ONE sentence for each pair of words. Use both words, in any order or form.\n\nScene: a busy airport check-in counter.\n1) unless / delayed\n2) while / waiting\n3) so that / on time" },
+    { id: "es3", type: "essay", label: "Q8 · Opinion essay", minutes: 30, words: 300,
+      title: "정년 퇴직 의무화",
+      text: "Some people believe companies should require employees to retire at a certain age. Others think employees should decide for themselves when to retire. Which view do you agree with, and why?" }
+  ];
+
+  const TYPE_KO = { read: "읽기", respond: "질문 답변", solution: "해결책 제시", opinion: "의견 말하기", email: "이메일", essay: "에세이", sentence: "문장 쓰기" };
+  const DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
+  const RRULE_DAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => String(n).padStart(2, "0");
+  const dayKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const dayIndex = (d = new Date()) => Math.floor(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / 86400000);
+  const words = (s) => (s.trim().match(/[A-Za-z0-9'’-]+/g) || []).length;
+  const fmt = (sec) => `${Math.floor(sec / 60)}:${pad(Math.max(0, Math.floor(sec % 60)))}`;
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  }
+  function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
+  function showStatus(node, msg, err) { node.hidden = !msg; node.textContent = msg || ""; node.classList.toggle("err", !!err); }
+
+  let audioCtx;
+  function beep(times = 1) {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      for (let i = 0; i < times; i++) {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.28;
+        o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        o.start(t); o.stop(t + 0.24);
+      }
+    } catch {}
+    try { navigator.vibrate && navigator.vibrate(times > 1 ? [150, 80, 150] : 150); } catch {}
+  }
+  function speak(text) {
+    try {
+      const s = window.speechSynthesis; if (!s) return false;
+      s.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-US"; u.rate = 0.95;
+      const v = s.getVoices().find((x) => /en[-_]US/i.test(x.lang));
+      if (v) u.voice = v;
+      s.speak(u); return true;
+    } catch { return false; }
+  }
+
+  // ---------- State (localStorage) ----------
+  const state = {
+    settings: Object.assign({ level: 800, alarmTime: "07:30", alarmDays: [0, 1, 2, 3, 4, 5, 6], apiKey: "", keepAudio: false }, lsGet("dedh.settings", {})),
+    entries: lsGet("dedh.entries", []),
+    spOffset: 0, wrOffset: 0,
+    spTask: null, wrTask: null
+  };
+  function saveSettings() { lsSet("dedh.settings", state.settings); }
+  if ((state.settings.v || 1) < 2) { state.settings.keepAudio = false; state.settings.v = 2; saveSettings(); }
+  function addEntry(e) {
+    e.ts = Date.now(); e.day = dayKey(); e.id = "e" + e.ts;
+    state.entries.unshift(e);
+    if (!lsSet("dedh.entries", state.entries)) {
+      state.entries = state.entries.slice(0, 300);
+      lsSet("dedh.entries", state.entries);
+    }
+    renderAll();
+  }
+
+  // ---------- Tabs ----------
+  const TABS = ["today", "speak", "write", "log", "alarm"];
+  function go(tab) {
+    for (const t of TABS) $("tab-" + t).hidden = t !== tab;
+    document.querySelectorAll("nav.tabs button").forEach((b) => {
+      if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    window.scrollTo(0, 0);
+    try { sessionStorage.setItem("dedh.tab", tab); } catch {}
+  }
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => go(b.dataset.tab)));
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
+
+  // ---------- Today ----------
+  function streak() {
+    const days = new Set(state.entries.map((e) => e.day));
+    const d = new Date();
+    if (!days.has(dayKey(d))) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (days.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  const dailySpeak = () => SPEAK[dayIndex() % SPEAK.length];
+  const dailyWrite = () => WRITE[(dayIndex() + 3) % WRITE.length];
+  function renderToday() {
+    const now = new Date();
+    $("today-label").textContent = `${now.getMonth() + 1}월 ${now.getDate()}일 ${DAYS_KO[now.getDay()]}요일`;
+    $("level-chip").textContent = "TOEIC " + state.settings.level;
+    const days = new Set(state.entries.map((e) => e.day));
+    const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const wb = $("week-bubbles"); wb.textContent = "";
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      const b = el("span", { class: "bubble", text: DAYS_KO[d.getDay()], title: dayKey(d) });
+      if (days.has(dayKey(d))) b.classList.add("on");
+      if (dayKey(d) === dayKey(now)) b.classList.add("today");
+      wb.append(b);
+    }
+    const sun = new Date(monday); sun.setDate(monday.getDate() + 6);
+    $("week-range").textContent = `${monday.getMonth() + 1}/${monday.getDate()} – ${sun.getMonth() + 1}/${sun.getDate()}`;
+    $("st-streak").textContent = streak();
+    $("st-total").textContent = state.entries.length;
+    const scored = state.entries.filter((e) => typeof e.score === "number").slice(0, 10);
+    $("st-avg").textContent = scored.length ? (scored.reduce((a, e) => a + e.score, 0) / scored.length).toFixed(1) : "–";
+    const today = dayKey();
+    $("speak-done").hidden = !state.entries.some((e) => e.day === today && e.kind === "speak");
+    $("write-done").hidden = !state.entries.some((e) => e.day === today && e.kind === "write");
+    $("today-speak-title").textContent = `${TYPE_KO[dailySpeak().type]} · ${dailySpeak().title}`;
+    $("today-write-title").textContent = `${TYPE_KO[dailyWrite().type]} · ${dailyWrite().title}`;
+    const s = state.settings;
+    const dayTxt = s.alarmDays.length === 7 ? "매일" : s.alarmDays.length ? s.alarmDays.slice().sort().map((i) => DAYS_KO[i]).join("·") : "꺼짐";
+    $("alarm-summary").textContent = `${dayTxt} ${s.alarmTime} · 휴대폰 캘린더 알림`;
+    const [h, m] = s.alarmTime.split(":").map(Number);
+    const due = s.alarmDays.includes(now.getDay()) && (now.getHours() * 60 + now.getMinutes()) >= h * 60 + m;
+    $("alarm-banner").hidden = !(due && !days.has(today));
+    $("alarm-banner-text").textContent = `${s.alarmTime} 연습 시간이 지났어요. 오늘 연습을 아직 안 했어요.`;
+  }
+
+  // ---------- Timer ----------
+  function makeTimer(prefix, onPhase) {
+    const t = { phase: "idle", end: 0, total: 0, startedAnswer: 0, answerSecs: 0, iv: null };
+    let wake = null;
+    function paint() {
+      const left = t.phase === "idle" || t.phase === "done" ? 0 : Math.max(0, (t.end - Date.now()) / 1000);
+      $(prefix + "-clock").textContent = fmt(Math.ceil(left));
+      $(prefix + "-bar").style.width = t.total ? `${100 - (left / t.total) * 100}%` : "0";
+      if ((t.phase === "prep" || t.phase === "answer") && left <= 0) next();
+    }
+    function run(phase, secs, label) {
+      t.phase = phase; t.total = secs; t.end = Date.now() + secs * 1000;
+      const ph = $(prefix + "-phase"); ph.textContent = label; ph.classList.toggle("live", phase === "answer");
+      if (phase === "answer") t.startedAnswer = Date.now();
+      clearInterval(t.iv); t.iv = setInterval(paint, 250); paint();
+      $(prefix + "-stop").disabled = false;
+      if (!wake && navigator.wakeLock) navigator.wakeLock.request("screen").then((w) => { wake = w; }).catch(() => {});
+    }
+    function stop(label = "종료") {
+      if (t.phase === "answer") t.answerSecs = (Date.now() - t.startedAnswer) / 1000;
+      clearInterval(t.iv); t.phase = "done"; t.total = 0;
+      $(prefix + "-phase").textContent = label; $(prefix + "-phase").classList.remove("live");
+      $(prefix + "-stop").disabled = true;
+      try { wake && wake.release(); } catch {} wake = null;
+      paint(); onPhase && onPhase("done");
+    }
+    function next() {
+      if (t.phase === "prep") { beep(1); onPhase && onPhase("answer"); }
+      else if (t.phase === "answer") { beep(2); stop("시간 종료"); }
+    }
+    return Object.assign(t, { run, stop, reset() { clearInterval(t.iv); t.phase = "idle"; t.total = 0; t.answerSecs = 0; $(prefix + "-phase").textContent = "대기"; $(prefix + "-phase").classList.remove("live"); $(prefix + "-stop").disabled = true; paint(); } });
+  }
+
+  // ---------- Recorder: live speech-to-text + optional audio for playback ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = {
+    active: false, recog: null, committed: "", session: "", media: null, stream: null, chunks: [], audioUrl: null,
+    heard: false, listening: false, noSpeech: 0, watch: null,
+    text() { return [this.committed, this.session].filter(Boolean).join(" ").trim(); },
+    async start() {
+      this.active = true; this.committed = ""; this.session = "";
+      this.heard = false; this.listening = false; this.noSpeech = 0;
+      $("sp-answer").value = ""; $("sp-interim").textContent = "";
+      if (this.audioUrl) { URL.revokeObjectURL(this.audioUrl); this.audioUrl = null; }
+      $("sp-audio").hidden = true;
+      setMicUi(true);
+      if (SR) this.startRecog();
+      if (state.settings.keepAudio || !SR) await this.startMedia();
+      if (!SR) showStatus($("sp-status"), "이 브라우저는 실시간 받아쓰기를 지원하지 않아요. Chrome으로 열거나, 입력창을 누르고 키보드 마이크로 말하세요.", true);
+      // Many Android phones give the mic to only one of recording and dictation. If dictation hears
+      // nothing while recording runs, drop the recording and keep dictation.
+      clearTimeout(this.watch);
+      if (SR && this.media) this.watch = setTimeout(() => {
+        if (!this.active || !this.media || this.heard) return;
+        this.stopMedia(false);
+        state.settings.keepAudio = false; saveSettings(); $("keep-audio").checked = false;
+        try { this.recog && this.recog.abort(); } catch {}
+        showStatus($("sp-status"), "이 휴대폰은 녹음과 받아쓰기를 동시에 못 해서 목소리 녹음을 껐어요. 계속 말하세요.", true);
+      }, 5000);
+    },
+    startRecog() {
+      const r = new SR();
+      r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onaudiostart = () => {
+        this.listening = true;
+        if (this.active) $("rec-sub").textContent = "듣고 있어요. 다 말했으면 정사각형 버튼을 누르세요.";
+      };
+      r.onresult = (e) => {
+        this.heard = true; this.noSpeech = 0;
+        // Android Chrome can repeat earlier text inside later final results, so merge by prefix.
+        let acc = "", interim = "";
+        for (let i = 0; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript.trim();
+          if (!t) continue;
+          if (e.results[i].isFinal) acc = t.toLowerCase().startsWith(acc.toLowerCase()) && acc ? t : [acc, t].filter(Boolean).join(" ");
+          else interim = t;
+        }
+        this.session = acc;
+        $("sp-answer").value = this.text();
+        $("sp-interim").textContent = interim;
+        updateSpMeta();
+      };
+      r.onerror = (e) => {
+        if (r !== this.recog) return;
+        const st = $("sp-status");
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+          showStatus(st, "받아쓰기 권한이 없어요. 휴대폰 설정 › 애플리케이션 › Chrome › 권한에서 마이크를 허용하고, Google 앱이 설치돼 있는지 확인해 주세요.", true);
+          stopAnswer();
+        } else if (e.error === "audio-capture") {
+          if (this.media) {
+            this.stopMedia(false);
+            state.settings.keepAudio = false; saveSettings(); $("keep-audio").checked = false;
+            showStatus(st, "이 휴대폰은 녹음과 받아쓰기를 동시에 못 해서 목소리 녹음을 껐어요. 계속 말하세요.", true);
+          } else {
+            showStatus(st, "다른 앱이 마이크를 쓰고 있어서 받아쓰기를 못 해요. 통화나 녹음 앱을 닫고 다시 시도해 주세요.", true);
+          }
+        } else if (e.error === "network") {
+          showStatus(st, "받아쓰기는 인터넷 연결이 필요해요. 연결을 확인해 주세요.", true);
+        } else if (e.error === "language-not-supported") {
+          showStatus(st, "이 휴대폰의 음성 인식이 영어를 지원하지 않아요. Google 앱 › 설정 › 음성 › 언어에 English (US)를 추가해 주세요.", true);
+          stopAnswer();
+        } else if (e.error === "no-speech") {
+          if (!this.media && ++this.noSpeech >= 2) showStatus(st, "목소리가 들리지 않아요. 휴대폰 마이크 가까이에서 또렷하게 말해 보세요.", true);
+        } else if (e.error !== "aborted") {
+          showStatus(st, `받아쓰기에 문제가 생겼어요 (${e.error}). 다시 녹음하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.`, true);
+        }
+      };
+      r.onend = () => {
+        if (this.session) { this.committed = this.text(); this.session = ""; }
+        if (this.active && r === this.recog) { try { r.start(); } catch {} }
+      };
+      this.recog = r;
+      try { r.start(); } catch {}
+    },
+    async startMedia() {
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!this.active) { this.stream.getTracks().forEach((t) => t.stop()); this.stream = null; return; }
+        this.chunks = [];
+        const m = new MediaRecorder(this.stream);
+        m.ondataavailable = (e) => { if (e.data && e.data.size) this.chunks.push(e.data); };
+        m.onstop = () => {
+          if (this.chunks.length) {
+            this.audioUrl = URL.createObjectURL(new Blob(this.chunks, { type: m.mimeType || "audio/webm" }));
+            $("sp-audio").src = this.audioUrl; $("sp-audio").hidden = false;
+          }
+        };
+        m.start();
+        this.media = m;
+      } catch {
+        if (!SR) { showStatus($("sp-status"), "마이크를 쓸 수 없어요. 브라우저 설정에서 마이크 권한을 허용해 주세요.", true); stopAnswer(); }
+      }
+    },
+    stopMedia(keepResult = true) {
+      const m = this.media; this.media = null;
+      try { if (m && m.state !== "inactive") { if (!keepResult) m.onstop = null; m.stop(); } } catch {}
+      try { this.stream && this.stream.getTracks().forEach((t) => t.stop()); } catch {}
+      this.stream = null;
+    },
+    stop() {
+      if (!this.active) return;
+      this.active = false;
+      clearTimeout(this.watch);
+      try { this.recog && this.recog.stop(); } catch {}
+      this.recog = null;
+      this.stopMedia(true);
+      this.committed = this.text(); this.session = "";
+      $("sp-interim").textContent = "";
+      setMicUi(false);
+    }
+  };
+  // Shown when the answer box is empty; explains what to try instead of only asking to record.
+  function noSpeechAnswerMsg() {
+    if (rec.audioUrl) return "녹음은 됐지만 받아쓰기된 글이 없어요. '내 목소리도 녹음해서 다시 듣기'를 끄고 다시 녹음하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.";
+    return "답변이 비어 있어요. 마이크 버튼을 누르고 영어로 말하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.";
+  }
+  function setMicUi(live) {
+    $("sp-mic").classList.toggle("live", live);
+    $("sp-mic").setAttribute("aria-label", live ? "녹음 정지" : "녹음 시작");
+    $("rec-title").textContent = live ? "녹음 중 · 영어로 말하세요" : "바로 녹음하기";
+    $("rec-sub").textContent = live ? "다 말했으면 정사각형 버튼을 누르세요." : "누르면 답변 시간이 시작되고 말한 내용이 받아쓰기됩니다.";
+  }
+
+  // ---------- Speaking ----------
+  const spTimer = makeTimer("sp", (p) => {
+    if (p === "answer") startAnswer();
+    if (p === "done") { rec.stop(); updateSpMeta(); }
+  });
+  function startAnswer() {
+    showStatus($("sp-status"), "");
+    spTimer.run("answer", state.spTask.time, "답변하세요");
+    rec.start();
+  }
+  function stopAnswer() { if (spTimer.phase === "prep" || spTimer.phase === "answer") spTimer.stop("정지됨"); else rec.stop(); }
+  function loadSpeak(task) {
+    rec.stop();
+    state.spTask = task;
+    $("sp-type").textContent = task.label;
+    $("sp-limits").textContent = `준비 ${task.prep}초 · 답변 ${task.time}초`;
+    $("sp-title").textContent = task.title;
+    $("sp-text").textContent = task.text;
+    const ps = $("sp-passage");
+    ps.hidden = !task.passage; ps.textContent = task.passage || "";
+    $("sp-check").hidden = task.type !== "read";
+    $("sp-listen").textContent = task.type === "read" ? "원문 듣기" : "문제 듣기";
+    $("sp-answer").value = "";
+    $("sp-audio").hidden = true;
+    $("sp-fb-wrap").hidden = true;
+    showStatus($("sp-status"), ""); showStatus($("sp-task-status"), "");
+    $("sp-handoff").hidden = true;
+    spTimer.reset(); updateSpMeta();
+  }
+  function updateSpMeta() {
+    const n = words($("sp-answer").value);
+    $("sp-words").textContent = `${n} 단어`;
+    const secs = spTimer.phase === "answer" ? (Date.now() - spTimer.startedAnswer) / 1000 : spTimer.answerSecs;
+    $("sp-wpm").textContent = secs > 5 && n ? `말하기 ${Math.round(secs)}초 · 분당 ${Math.round(n / (secs / 60))}단어` : "";
+  }
+  $("keep-audio").checked = !!state.settings.keepAudio;
+  $("keep-audio").addEventListener("change", (e) => { state.settings.keepAudio = e.target.checked; saveSettings(); });
+  $("sp-mic").addEventListener("click", () => { if (rec.active) stopAnswer(); else { beep(1); startAnswer(); } });
+  $("sp-start").addEventListener("click", () => { rec.stop(); beep(1); spTimer.run("prep", state.spTask.prep, "준비 시간"); });
+  $("sp-stop").addEventListener("click", stopAnswer);
+  $("sp-answer").addEventListener("input", updateSpMeta);
+  $("sp-next").addEventListener("click", () => { state.spOffset++; loadSpeak(SPEAK[(dayIndex() + state.spOffset) % SPEAK.length]); });
+  $("sp-listen").addEventListener("click", () => {
+    const t = state.spTask; if (!speak(t.passage || t.text)) showStatus($("sp-task-status"), "이 기기에서는 음성 재생을 지원하지 않아요.", true);
+  });
+
+  // Read-aloud accuracy: align transcript words to the passage (LCS) and mark the missed words.
+  const norm = (w) => w.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9']/g, "");
+  function readAccuracy(passage, said) {
+    const P = passage.split(/\s+/).filter(Boolean), A = said.split(/\s+/).map(norm).filter(Boolean);
+    const p = P.map(norm), n = p.length, m = A.length;
+    const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = p[i] === A[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    const hit = new Array(n).fill(false);
+    for (let i = 0, j = 0; i < n && j < m;) {
+      if (p[i] === A[j]) { hit[i] = true; i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+    }
+    return { P, hit, pct: n ? Math.round((hit.filter(Boolean).length / n) * 100) : 0 };
+  }
+  function showAccuracy() {
+    const t = state.spTask; if (!t.passage) return null;
+    const r = readAccuracy(t.passage, $("sp-answer").value);
+    const ps = $("sp-passage"); ps.textContent = "";
+    r.P.forEach((w, i) => { ps.append(el("span", { class: r.hit[i] ? "hit" : "miss", text: w }), " "); });
+    return r;
+  }
+  $("sp-check").addEventListener("click", () => {
+    if (!$("sp-answer").value.trim()) { showStatus($("sp-status"), "먼저 원문을 소리 내어 읽으며 녹음하세요.", true); return; }
+    const r = showAccuracy();
+    showStatus($("sp-status"), `인식 정확도 ${r.pct}%. 물결 밑줄 단어는 받아쓰기에 잡히지 않은 단어예요. 발음이나 강세를 다시 연습해 보세요.`);
+  });
+
+  // ---------- Writing ----------
+  const wrTimer = makeTimer("wr", () => {});
+  function loadWrite(task) {
+    state.wrTask = task;
+    $("wr-type").textContent = task.label;
+    $("wr-limits").textContent = `${task.minutes}분 · 목표 ${task.words}단어+`;
+    $("wr-title").textContent = task.title;
+    $("wr-text").textContent = task.text;
+    $("wr-answer").value = lsGet("dedh.draft.wr." + task.id, "");
+    $("wr-fb-wrap").hidden = true;
+    showStatus($("wr-status"), ""); showStatus($("wr-task-status"), "");
+    $("wr-handoff").hidden = true;
+    wrTimer.reset(); updateWrMeta();
+  }
+  function updateWrMeta() {
+    const n = words($("wr-answer").value);
+    $("wr-words").textContent = `${n} 단어`;
+    $("wr-target").textContent = n >= state.wrTask.words ? "목표 분량 달성" : `목표까지 ${state.wrTask.words - n}단어`;
+  }
+  $("wr-start").addEventListener("click", () => { beep(1); wrTimer.run("answer", state.wrTask.minutes * 60, "작성 중"); $("wr-answer").focus(); });
+  $("wr-stop").addEventListener("click", () => wrTimer.stop("정지됨"));
+  $("wr-answer").addEventListener("input", () => { updateWrMeta(); lsSet("dedh.draft.wr." + state.wrTask.id, $("wr-answer").value); });
+  $("wr-next").addEventListener("click", () => { state.wrOffset++; loadWrite(WRITE[(dayIndex() + 3 + state.wrOffset) % WRITE.length]); });
+
+  // ---------- Claude API ----------
+  let AnthropicCls = null;
+  async function client() {
+    if (!state.settings.apiKey) throw { code: "no_key" };
+    if (!AnthropicCls) AnthropicCls = (await import("../vendor/anthropic.mjs")).default;
+    return new AnthropicCls({ apiKey: state.settings.apiKey, dangerouslyAllowBrowser: true, maxRetries: 2 });
+  }
+  async function askJSON(prompt, schema, effort) {
+    const c = await client();
+    const res = await c.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      output_config: { effort, format: { type: "json_schema", schema } },
+      messages: [{ role: "user", content: prompt }]
+    });
+    if (res.stop_reason === "refusal") throw { code: "refusal" };
+    if (res.stop_reason === "max_tokens") throw { code: "truncated" };
+    const text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+    try { return JSON.parse(text); } catch { throw { code: "invalid_json" }; }
+  }
+  function errCopy(e) {
+    if (e && e.code === "no_key") return "설정 탭에서 Claude API 키를 먼저 넣어 주세요.";
+    if (e && e.code === "refusal") return "Claude가 이 답변에는 피드백을 줄 수 없다고 했어요. 내용을 바꿔 다시 시도해 주세요.";
+    if (e && (e.code === "truncated" || e.code === "invalid_json")) return "응답이 중간에 끊겼어요. 다시 눌러 주세요.";
+    const C = AnthropicCls;
+    if (C && e instanceof C.AuthenticationError) return "API 키가 올바르지 않아요. 설정 탭에서 키를 확인해 주세요.";
+    if (C && e instanceof C.PermissionDeniedError) return "이 API 키로는 Claude Haiku 5.5를 쓸 수 없어요. Console에서 권한을 확인해 주세요.";
+    if (C && e instanceof C.RateLimitError) return "요청이 많아요. 1분쯤 뒤에 다시 눌러 주세요.";
+    if (C && e instanceof C.BadRequestError && /credit/i.test(e.message || "")) return "API 크레딧이 부족해요. Console의 Billing에서 충전해 주세요.";
+    if (C && e instanceof C.APIConnectionError) return "인터넷에 연결되지 않았어요. 연결을 확인하고 다시 눌러 주세요.";
+    if (C && e instanceof C.InternalServerError) return "Claude 서버가 잠시 응답하지 않아요. 조금 뒤에 다시 눌러 주세요.";
+    return "피드백을 받지 못했어요. 다시 눌러 주세요." + (e && e.message ? ` (${e.message.slice(0, 120)})` : "");
+  }
+
+  const STR = { type: "string" };
+  const FEEDBACK_SCHEMA = {
+    type: "object", additionalProperties: false,
+    required: ["score", "level_estimate", "summary_ko", "strengths_ko", "corrections", "upgraded_answer", "key_expressions", "next_tip_ko"],
+    properties: {
+      score: { type: "integer" },
+      level_estimate: STR,
+      summary_ko: STR,
+      strengths_ko: { type: "array", items: STR },
+      corrections: { type: "array", items: { type: "object", additionalProperties: false, required: ["original", "better", "why_ko"], properties: { original: STR, better: STR, why_ko: STR } } },
+      upgraded_answer: STR,
+      key_expressions: { type: "array", items: { type: "object", additionalProperties: false, required: ["en", "ko"], properties: { en: STR, ko: STR } } },
+      next_tip_ko: STR
+    }
+  };
+  const FIELDS_TXT = `Fill the fields as follows:
+- score: integer 0-10 (10 = flawless native-like answer for this task)
+- level_estimate: short Korean string, e.g. "TOEIC 750~800 수준"
+- summary_ko: 2-3 sentences in Korean with the overall evaluation
+- strengths_ko: up to 2 short Korean points
+- corrections: 3-6 items, most important first ([] if none); original = the learner's exact phrase, better = corrected or more natural English, why_ko = short Korean reason
+- upgraded_answer: a natural model answer in English, one level above the learner, keeping the learner's ideas
+- key_expressions: exactly 3 useful expressions with Korean meanings
+- next_tip_ko: one concrete thing to practice next time, in Korean`;
+
+  function speakPrompt(t, ans, secs) {
+    return `You are an expert TOEIC Speaking coach for a Korean learner whose target is TOEIC ${state.settings.level} (about CEFR B2).
+The learner answered out loud. The answer below is an automatic speech-to-text transcript: ignore punctuation and capitalization, and treat odd words as possible pronunciation issues (mention them in corrections if they look like mispronunciations).
+Task type: ${t.label}
+Task: ${t.text}${t.passage ? "\nPassage to read aloud: " + t.passage : ""}
+Time limit: ${t.time} seconds. Actual speaking time: ${Math.round(secs) || "unknown"} seconds. Word count: ${words(ans)}.
+Evaluate task completion, grammar, vocabulary, coherence and fluency (length relative to the time limit). For a read-aloud task, focus on missed or misread words, and write upgraded_answer as the passage chunked with "/" marks for pausing.
+Transcript:
+"""${ans}"""
+
+${FIELDS_TXT}`;
+  }
+  function writePrompt(t, ans) {
+    return `You are an expert TOEIC Writing rater and tutor for a Korean learner whose target is TOEIC ${state.settings.level} (about CEFR B2).
+Task type: ${t.label}
+Task: ${t.text}
+Recommended length: ${t.words}+ words. Learner's word count: ${words(ans)}.
+Evaluate task completion (did they do everything the directions ask?), organization, grammar, vocabulary and tone appropriate to the task.
+Learner's answer:
+"""${ans}"""
+
+${FIELDS_TXT}`;
+  }
+
+  function renderFeedback(box, fb) {
+    box.textContent = "";
+    const sc = Math.max(0, Math.min(10, Math.round(Number(fb.score) || 0)));
+    const bubbles = el("div", { class: "bubbles", "aria-label": `점수 ${sc}/10` });
+    for (let i = 1; i <= 10; i++) bubbles.append(el("span", { class: "bubble sm" + (i <= sc ? " on" : "") }));
+    box.append(
+      el("div", { class: "score-row" },
+        el("div", {}, el("h3", { text: "피드백" }), el("p", { class: "small muted", text: fb.level_estimate || "" })),
+        el("div", { class: "score-num" }, String(sc), el("small", { text: " / 10" }))),
+      bubbles,
+      el("p", { text: fb.summary_ko || "" })
+    );
+    if (Array.isArray(fb.strengths_ko) && fb.strengths_ko.length) {
+      box.append(el("div", {}, el("h3", { text: "잘한 점" }), el("ul", { class: "small", style: "margin:6px 0 0;padding-left:18px" }, ...fb.strengths_ko.map((s) => el("li", { text: s })))));
+    }
+    if (Array.isArray(fb.corrections) && fb.corrections.length) {
+      const ul = el("ul", { class: "corr" });
+      for (const c of fb.corrections) ul.append(el("li", {}, el("span", { class: "from", text: c.original || "" }), el("span", { class: "to", text: c.better || "" }), el("span", { class: "small muted", text: c.why_ko || "" })));
+      box.append(el("div", {}, el("h3", { text: "고쳐 쓰기" }), ul));
+    }
+    if (fb.upgraded_answer) {
+      const listen = el("button", { class: "btn ghost", type: "button", text: "모범 답안 듣기" });
+      listen.addEventListener("click", () => speak(fb.upgraded_answer.replace(/\s*\/\s*/g, " ")));
+      box.append(el("div", { style: "display:flex;flex-direction:column;gap:8px" }, el("h3", { text: "모범 답안" }), el("p", { class: "model", text: fb.upgraded_answer }), el("div", { class: "btn-row" }, listen)));
+    }
+    if (Array.isArray(fb.key_expressions) && fb.key_expressions.length) {
+      box.append(el("div", {}, el("h3", { text: "외울 표현" }), el("ul", { class: "expr", style: "margin-top:6px" }, ...fb.key_expressions.map((x) => el("li", {}, el("b", { text: x.en || "" }), el("span", { class: "small muted", text: x.ko || "" }))))));
+    }
+    if (fb.next_tip_ko) box.append(el("p", { class: "hint", text: "다음 연습: " + fb.next_tip_ko }));
+    if (fb.raw_text) box.append(el("p", { class: "ans", style: "white-space:pre-wrap", text: fb.raw_text }));
+  }
+
+  async function runFeedback(kind) {
+    const isSp = kind === "speak";
+    const t = isSp ? state.spTask : state.wrTask;
+    const st = $(isSp ? "sp-status" : "wr-status");
+    const btn = $(isSp ? "sp-feedback" : "wr-feedback");
+    const timer = isSp ? spTimer : wrTimer;
+    if (timer.phase === "prep" || timer.phase === "answer") timer.stop("종료");
+    if (isSp) rec.stop();
+    const ans = $(isSp ? "sp-answer" : "wr-answer").value.trim();
+    if (words(ans) < 3) { showStatus(st, isSp ? noSpeechAnswerMsg() : "답안을 먼저 작성하세요.", true); return; }
+    const secs = timer.answerSecs;
+    let accuracy = null;
+    if (isSp && t.passage) accuracy = showAccuracy().pct;
+    const entry = { kind, taskId: t.id, taskType: t.type, title: t.title, label: t.label, prompt: t.text, answer: ans, words: words(ans), seconds: Math.round(secs) || null };
+    if (accuracy != null) entry.accuracy = accuracy;
+
+    if (!state.settings.apiKey) {
+      showStatus(st, "설정 탭에서 Claude API 키를 먼저 넣어 주세요. 키 없이 받으려면 'Claude 앱으로 피드백 (무료)'을 누르세요.", true);
+      return;
+    }
+    btn.disabled = true;
+    showStatus(st, "Claude가 피드백을 쓰고 있어요. 보통 10~40초 걸려요.");
+    try {
+      const fb = await askJSON(isSp ? speakPrompt(t, ans, secs) : writePrompt(t, ans), FEEDBACK_SCHEMA, "medium");
+      renderFeedback($(isSp ? "sp-fb" : "wr-fb"), fb);
+      $(isSp ? "sp-fb-wrap" : "wr-fb-wrap").hidden = false;
+      entry.score = Math.max(0, Math.min(10, Math.round(Number(fb.score) || 0)));
+      entry.feedback = fb;
+      addEntry(entry);
+      showStatus(st, accuracy != null ? `읽기 인식 정확도 ${accuracy}% · 기록에 저장했어요.` : "기록에 저장했어요.");
+      if (!isSp) lsSet("dedh.draft.wr." + t.id, "");
+      $(isSp ? "sp-fb-wrap" : "wr-fb-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) {
+      showStatus(st, errCopy(e), true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  $("sp-feedback").addEventListener("click", () => runFeedback("speak"));
+  $("wr-feedback").addEventListener("click", () => runFeedback("write"));
+
+
+  // ---------- Free feedback through the Claude app (share or copy a ready-made request) ----------
+  const CLAUDE_URL = "https://claude.ai/new";
+  // On Android an intent link opens the Claude app itself instead of claude.ai in Chrome.
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  const CLAUDE_APP_URL = IS_ANDROID
+    ? "intent://claude.ai/new#Intent;scheme=https;package=com.anthropic.claude;S.browser_fallback_url=" + encodeURIComponent(CLAUDE_URL) + ";end"
+    : CLAUDE_URL;
+  function openClaudeApp() {
+    if (IS_ANDROID) location.href = CLAUDE_APP_URL; else window.open(CLAUDE_URL, "_blank", "noopener");
+  }
+  // The share sheet hands the request to the Claude app with the text already in the message box.
+  async function shareToClaude(text) {
+    if (!navigator.share) return false;
+    try { await navigator.share({ text }); return true; } catch { return false; }
+  }
+  const OUT_FMT = `아래 형식으로 한국어로 피드백해 줘. 영어 표현과 모범 답안은 영어로 써 줘.
+1. 점수: 0~10점 중 몇 점인지와 예상 수준 (예: TOEIC 750~800 수준)
+2. 총평: 2~3문장
+3. 잘한 점: 최대 2개
+4. 고쳐 쓰기: 중요한 순서로 3~6개, "내 표현 → 더 나은 표현 (이유)" 형식
+5. 모범 답안: 내 아이디어를 살려 한 단계 높은 수준으로
+6. 외울 표현 3개 (영어 – 뜻)
+7. 다음 연습 팁 1개
+
+그리고 맨 마지막에, 위 피드백과 같은 내용을 아래 형식의 JSON 코드 블록(\`\`\`json) 하나로 덧붙여 줘. 내 연습 앱이 이 블록을 읽어서 기록해.
+{"score": 0~10 정수, "level_estimate": "예상 수준", "summary_ko": "총평", "strengths_ko": ["잘한 점"], "corrections": [{"original": "내 표현", "better": "더 나은 표현", "why_ko": "이유"}], "upgraded_answer": "모범 답안", "key_expressions": [{"en": "영어 표현", "ko": "뜻"}], "next_tip_ko": "다음 연습 팁"}`;
+  function claudeRequest(kind, t, ans, secs) {
+    const lvl = state.settings.level;
+    if (kind === "speak") {
+      return `너는 TOEIC Speaking 코치야. 내 목표는 TOEIC ${lvl}점(CEFR B2 정도)이야.
+아래 [내 답변]은 내가 영어로 말한 것을 음성 인식으로 받아쓴 거야. 구두점과 대소문자는 무시하고, 이상하게 받아써진 단어는 발음 문제일 수 있으니 짚어 줘.${t.passage ? "\n읽기 문제라서 빠뜨리거나 잘못 읽은 단어를 중심으로 보고, 모범 답안 대신 끊어 읽을 곳을 / 로 표시한 지문을 보여 줘." : ""}
+
+[문제 유형] ${t.label}
+[문제]
+${t.text}${t.passage ? "\n\n[읽을 지문]\n" + t.passage : ""}
+
+[제한 시간] ${t.time}초 / [실제로 말한 시간] ${Math.round(secs) || "모름"}초 / [단어 수] ${words(ans)}
+
+[내 답변]
+${ans}
+
+${OUT_FMT}`;
+    }
+    return `너는 TOEIC Writing 채점자이자 튜터야. 내 목표는 TOEIC ${lvl}점(CEFR B2 정도)이야.
+지시사항을 빠짐없이 했는지, 구성, 문법, 어휘, 상황에 맞는 어조를 봐 줘.
+
+[문제 유형] ${t.label}
+[문제]
+${t.text}
+
+[권장 분량] ${t.words}단어 이상 / [내 분량] ${words(ans)}단어
+
+[내 답안]
+${ans}
+
+${OUT_FMT}`;
+  }
+  // Pending hand-offs survive the app being closed while the user is in Claude.
+  const HANDOFF_KEY = "dedh.handoff";
+  const handoff = Object.assign({ speak: null, write: null }, lsGet(HANDOFF_KEY, {}));
+  const saveHandoff = () => lsSet(HANDOFF_KEY, handoff);
+  async function sendToClaude(kind) {
+    const isSp = kind === "speak";
+    const t = isSp ? state.spTask : state.wrTask;
+    const st = $(isSp ? "sp-status" : "wr-status");
+    const timer = isSp ? spTimer : wrTimer;
+    if (timer.phase === "prep" || timer.phase === "answer") timer.stop("종료");
+    if (isSp) rec.stop();
+    const ans = $(isSp ? "sp-answer" : "wr-answer").value.trim();
+    if (words(ans) < 3) { showStatus(st, isSp ? noSpeechAnswerMsg() : "답안을 먼저 작성하세요.", true); return; }
+    showStatus(st, "");
+    const secs = timer.answerSecs;
+    const text = claudeRequest(kind, t, ans, secs);
+    let copied = false;
+    try { await navigator.clipboard.writeText(text); copied = true; } catch {}
+
+    // Save the attempt once per answer; Claude's feedback is attached when it is brought back.
+    let h = handoff[kind];
+    if (!h || h.answer !== ans || h.taskId !== t.id) {
+      const entry = { kind, taskId: t.id, taskType: t.type, title: t.title, label: t.label, prompt: t.text, answer: ans, words: words(ans), seconds: Math.round(secs) || null, via: "claude-app" };
+      if (isSp && t.passage) entry.accuracy = showAccuracy().pct;
+      addEntry(entry);
+      h = handoff[kind] = { id: entry.id, answer: ans, taskId: t.id, task: t, text, ts: Date.now() };
+      saveHandoff();
+    }
+    renderHandoff(kind, text, copied);
+    if (navigator.share) await shareToClaude(text);
+    else if (copied) openClaudeApp();
+  }
+
+  // Claude's reply ends with a ```json block (asked for in the request); fall back to the score line.
+  function parseClaudeFeedback(raw) {
+    if (!raw || !raw.trim()) return null;
+    const cands = [...raw.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)].map((m) => m[1]).reverse();
+    const a = raw.indexOf("{"), b = raw.lastIndexOf("}");
+    if (a >= 0 && b > a) cands.push(raw.slice(a, b + 1));
+    for (const c of cands) {
+      try {
+        const o = JSON.parse(c.trim().replace(/[“”]/g, '"'));
+        if (o && typeof o === "object" && "score" in o) {
+          const arr = (x) => (Array.isArray(x) ? x : []);
+          return {
+            score: Math.max(0, Math.min(10, Math.round(Number(o.score) || 0))),
+            level_estimate: String(o.level_estimate || ""), summary_ko: String(o.summary_ko || ""),
+            strengths_ko: arr(o.strengths_ko).map(String), corrections: arr(o.corrections), upgraded_answer: String(o.upgraded_answer || ""),
+            key_expressions: arr(o.key_expressions), next_tip_ko: String(o.next_tip_ko || ""), source: "claude-app"
+          };
+        }
+      } catch {}
+    }
+    const m = raw.match(/점수\s*[:：]?\s*\**\s*(\d{1,2})\s*(?:점|\/\s*10)/);
+    if (m && +m[1] <= 10) return { score: +m[1], raw_text: raw.replace(/```[\s\S]*?```/g, "").trim(), source: "claude-app" };
+    return null;
+  }
+  function importFeedback(kind, raw) {
+    const p = kind === "speak" ? "sp" : "wr";
+    const st = $(p + "-status");
+    const h = handoff[kind];
+    const e = h && state.entries.find((x) => x.id === h.id);
+    if (!e) { showStatus(st, "Claude 피드백을 붙일 연습을 찾지 못했어요. 먼저 'Claude로 피드백 받기'를 눌러 주세요.", true); return false; }
+    const fb = parseClaudeFeedback(raw);
+    if (!fb) { showStatus(st, "Claude 답변에서 피드백을 찾지 못했어요. Claude 답변 아래의 복사 버튼으로 답변 전체를 복사했는지 확인해 주세요.", true); return false; }
+    e.score = fb.score; e.feedback = fb;
+    lsSet("dedh.entries", state.entries);
+    handoff[kind] = null; saveHandoff();
+    renderFeedback($(p + "-fb"), fb);
+    $(p + "-fb-wrap").hidden = false;
+    $(p + "-handoff").hidden = true;
+    renderAll();
+    showStatus(st, `Claude 피드백을 가져와 기록에 저장했어요 (${fb.score}/10).`);
+    $(p + "-fb-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+
+  function renderHandoff(kind, text, copied) {
+    const p = kind === "speak" ? "sp" : "wr";
+    const box = $(p + "-handoff"); box.textContent = ""; box.hidden = false;
+    box.append(el("p", { class: "small", text: navigator.share
+      ? "공유할 앱 목록에서 Claude를 고르면 요청문이 입력된 채로 Claude 앱이 열려요. 보내기만 누르세요. 목록에 Claude가 없으면 'Claude 앱 열기'를 누르고 입력창에 붙여 넣으세요."
+      : copied
+        ? "요청문을 복사했어요. Claude 새 대화 입력창을 길게 눌러 붙여 넣고 보내세요."
+        : "자동 복사가 안 됐어요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해서 Claude에 붙여 넣으세요." }));
+    if (!copied) {
+      const ta = el("textarea", { readonly: "", id: p + "-handoff-text" }); ta.value = text;
+      box.append(ta); setTimeout(() => { ta.focus(); ta.select(); }, 50);
+    }
+    const again = el("button", { class: "btn ghost", type: "button", text: "요청문 복사" });
+    again.addEventListener("click", async () => { try { await navigator.clipboard.writeText(text); again.textContent = "복사했어요"; } catch { again.textContent = "복사 안 됨"; } });
+    const open = el("a", Object.assign({ class: "btn ghost", href: CLAUDE_APP_URL, text: "Claude 앱 열기" }, IS_ANDROID ? {} : { target: "_blank", rel: "noopener" }));
+    const row = el("div", { class: "btn-row" });
+    if (navigator.share) {
+      const share = el("button", { class: "btn ghost", type: "button", text: "Claude 앱에 공유" });
+      share.addEventListener("click", () => shareToClaude(text));
+      row.append(share);
+    }
+    row.append(open, again);
+    box.append(row);
+
+    // Bring Claude's answer back: read the clipboard, or paste by hand when reading is refused.
+    box.append(el("p", { class: "small", text: "Claude가 답하면 답변 아래의 복사 버튼을 누르고 이 앱으로 돌아와 아래 버튼을 누르세요. 결과가 이 화면에 정리되고 기록에 저장돼요." }));
+    const get = el("button", { class: "btn", type: "button", text: "Claude 답변 가져오기" });
+    const pasteBox = el("textarea", { id: p + "-paste", placeholder: "자동으로 안 되면 여기를 길게 눌러 Claude 답변을 붙여 넣으세요" });
+    pasteBox.hidden = true;
+    const readBtn = el("button", { class: "btn quiet", type: "button", text: "붙여 넣은 답변 읽기" });
+    readBtn.hidden = true;
+    get.addEventListener("click", async () => {
+      let raw = "";
+      try { raw = await navigator.clipboard.readText(); } catch {}
+      if (raw && importFeedback(kind, raw)) return;
+      pasteBox.hidden = false; readBtn.hidden = false; pasteBox.focus();
+      if (!raw) showStatus($(p + "-status"), "클립보드를 읽지 못했어요. 아래 칸에 Claude 답변을 붙여 넣어 주세요.", true);
+    });
+    readBtn.addEventListener("click", () => importFeedback(kind, pasteBox.value));
+    pasteBox.addEventListener("paste", () => setTimeout(() => importFeedback(kind, pasteBox.value), 0));
+    box.append(el("div", { class: "btn-row" }, get), pasteBox, el("div", { class: "btn-row" }, readBtn));
+
+    // Last resort: type the score.
+    const inp = el("input", { type: "number", id: p + "-score", min: "0", max: "10", inputmode: "numeric", placeholder: "0~10" });
+    const save = el("button", { class: "btn quiet", type: "button", text: "점수 저장" });
+    const note = el("p", { class: "small muted", text: "답변을 가져올 수 없을 때 점수만 넣어도 기록돼요." });
+    save.addEventListener("click", () => {
+      const v = Math.round(Number(inp.value));
+      if (inp.value === "" || !(v >= 0 && v <= 10)) { note.textContent = "0부터 10 사이 숫자를 넣어 주세요."; return; }
+      const e = handoff[kind] && state.entries.find((x) => x.id === handoff[kind].id);
+      if (!e) { note.textContent = "이 연습 기록을 찾지 못했어요."; return; }
+      e.score = v; lsSet("dedh.entries", state.entries); renderAll();
+      note.textContent = `${v}점으로 저장했어요.`;
+    });
+    box.append(el("details", {}, el("summary", { class: "small", text: "점수만 직접 넣기" }),
+      el("div", { class: "score-in", style: "margin-top:8px" }, el("label", { for: p + "-score", text: "Claude가 준 점수" }), inp, save), note));
+  }
+  $("sp-claude").addEventListener("click", () => sendToClaude("speak"));
+  $("wr-claude").addEventListener("click", () => sendToClaude("write"));
+
+  // On open: bring back an unfinished hand-off, and accept a Claude answer shared into the app.
+  function restoreHandoff() {
+    let latest = null;
+    for (const kind of ["speak", "write"]) {
+      const h = handoff[kind];
+      const e = h && state.entries.find((x) => x.id === h.id);
+      if (!h || !e || e.feedback || Date.now() - h.ts > 24 * 3600 * 1000 || !h.task) { handoff[kind] = null; continue; }
+      if (kind === "speak") { loadSpeak(h.task); $("sp-answer").value = h.answer; updateSpMeta(); }
+      else { loadWrite(h.task); $("wr-answer").value = h.answer; updateWrMeta(); }
+      renderHandoff(kind, h.text, true);
+      if (!latest || h.ts > handoff[latest].ts) latest = kind;
+    }
+    saveHandoff();
+    const q = new URLSearchParams(location.search);
+    const shared = [q.get("text"), q.get("title"), q.get("url")].filter(Boolean).join("\n");
+    if (q.has("text") || q.has("title") || q.has("url")) history.replaceState(null, "", location.pathname);
+    if (latest) {
+      go(latest);
+      if (shared) importFeedback(latest, shared);
+      return true;
+    }
+    if (shared) { go("today"); showNotice("공유받은 Claude 답변을 붙일 연습이 없어요. 말하기나 쓰기에서 'Claude로 피드백 받기'부터 눌러 주세요."); }
+    return !!shared;
+  }
+  function showNotice(msg) { $("notice-text").textContent = msg; $("notice").hidden = false; }
+  $("notice-close").addEventListener("click", () => { $("notice").hidden = true; });
+
+  const SPEAK_TASK_SCHEMA = {
+    type: "object", additionalProperties: false,
+    required: ["type", "label", "title", "text", "passage", "prep", "time"],
+    properties: { type: { type: "string", enum: ["read", "respond", "solution", "opinion"] }, label: STR, title: STR, text: STR, passage: STR, prep: { type: "integer" }, time: { type: "integer" } }
+  };
+  const WRITE_TASK_SCHEMA = {
+    type: "object", additionalProperties: false,
+    required: ["type", "label", "title", "text", "minutes", "words"],
+    properties: { type: { type: "string", enum: ["sentence", "email", "essay"] }, label: STR, title: STR, text: STR, minutes: { type: "integer" }, words: { type: "integer" } }
+  };
+  async function aiTask(kind) {
+    const isSp = kind === "speak";
+    const st = $(isSp ? "sp-task-status" : "wr-task-status");
+    const btn = $(isSp ? "sp-ai" : "wr-ai");
+    if (!state.settings.apiKey) { showStatus(st, errCopy({ code: "no_key" }), true); return; }
+    const recent = state.entries.slice(0, 8).map((e) => e.title).join("; ");
+    const spec = isSp
+      ? `Create ONE new TOEIC Speaking practice task. Pick one type at random: "read" (Q1-2, a 60-80 word announcement or ad to read aloud, prep 45, time 45, label "Q1-2 · Read a text aloud"), "respond" (Q5-7, one interview question with a short scenario, prep 3, time 30, label "Q5-7 · Respond to questions"), "solution" (Q10, a voice message describing a workplace problem in quotes plus directions, prep 45, time 60, label "Q10 · Propose a solution"), "opinion" (Q11, prep 45, time 60, label "Q11 · Express an opinion").
+title is a short Korean title. text holds the English directions and question. passage is the text to read for the read type and an empty string otherwise.`
+      : `Create ONE new TOEIC Writing practice task. Pick one type at random: "sentence" (Q1-5 style: a scene plus three numbered word pairs, minutes 8, words 45, label "Q1-5 · Write sentences"), "email" (Q6-7: an incoming e-mail with FROM and SUBJECT lines and directions asking for specific items, minutes 10, words 120, label "Q6-7 · Respond to an e-mail"), "essay" (Q8 opinion essay, minutes 30, words 300, label "Q8 · Opinion essay").
+title is a short Korean title. text holds the full English task with directions.`;
+    btn.disabled = true;
+    showStatus(st, "새 문제를 만드는 중이에요…");
+    try {
+      const t = await askJSON(`${spec}\nDifficulty: TOEIC ${state.settings.level} level (CEFR B2), realistic business or daily-life context. Avoid these recent topics: ${recent || "none"}.`, isSp ? SPEAK_TASK_SCHEMA : WRITE_TASK_SCHEMA, "low");
+      t.id = "ai" + Date.now();
+      if (isSp) { if (t.type !== "read") t.passage = ""; loadSpeak(t); } else loadWrite(t);
+    } catch (e) {
+      showStatus(st, errCopy(e), true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  $("sp-ai").addEventListener("click", () => aiTask("speak"));
+  $("wr-ai").addEventListener("click", () => aiTask("write"));
+
+  // ---------- API key ----------
+  function renderKey() {
+    const has = !!state.settings.apiKey;
+    $("key-banner").hidden = has;
+    $("sp-ai").hidden = !has; $("wr-ai").hidden = !has;
+    $("key-state").textContent = has ? "저장됨 ····" + state.settings.apiKey.slice(-4) : "없음";
+    $("api-key").value = "";
+    $("api-key").placeholder = has ? "새 키로 바꾸려면 붙여 넣으세요" : "sk-ant-...";
+  }
+  $("key-save").addEventListener("click", async () => {
+    const v = $("api-key").value.trim();
+    const st = $("key-status");
+    if (!v && !state.settings.apiKey) { showStatus(st, "키를 붙여 넣어 주세요.", true); return; }
+    if (v) { state.settings.apiKey = v; saveSettings(); }
+    renderKey(); renderToday();
+    $("key-save").disabled = true;
+    showStatus(st, "키를 확인하는 중이에요…");
+    try {
+      const c = await client();
+      await c.models.retrieve(MODEL);
+      showStatus(st, "키가 정상이에요. 이제 피드백을 받을 수 있어요.");
+    } catch (e) {
+      showStatus(st, errCopy(e), true);
+    } finally {
+      $("key-save").disabled = false;
+    }
+  });
+  $("key-clear").addEventListener("click", () => { state.settings.apiKey = ""; saveSettings(); renderKey(); renderToday(); showStatus($("key-status"), "키를 지웠어요."); });
+
+  // ---------- Backup ----------
+  $("export-btn").addEventListener("click", () => {
+    const data = { app: "daily-english-drill", exported: new Date().toISOString(), entries: state.entries, settings: Object.assign({}, state.settings, { apiKey: "" }) };
+    const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" })), download: `english-drill-haiku-${dayKey()}.json` });
+    document.body.append(a); a.click(); a.remove();
+    showStatus($("backup-status"), `기록 ${state.entries.length}개를 내보냈어요. API 키는 포함되지 않아요.`);
+  });
+  $("import-btn").addEventListener("click", () => $("import-file").click());
+  $("import-file").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      if (!Array.isArray(data.entries)) throw new Error();
+      const seen = new Set(state.entries.map((x) => x.ts));
+      const add = data.entries.filter((x) => x && x.ts && !seen.has(x.ts));
+      state.entries = state.entries.concat(add).sort((a, b) => b.ts - a.ts);
+      lsSet("dedh.entries", state.entries);
+      renderAll();
+      showStatus($("backup-status"), `기록 ${add.length}개를 가져왔어요.`);
+    } catch {
+      showStatus($("backup-status"), "이 파일은 읽을 수 없어요. '기록 내보내기'로 만든 파일을 골라 주세요.", true);
+    }
+    e.target.value = "";
+  });
+
+  // ---------- Log ----------
+  function renderLog() {
+    const list = $("log-list"); list.textContent = "";
+    if (!state.entries.length) {
+      list.append(el("div", { class: "empty" }, el("p", { text: "아직 기록이 없어요." }), el("p", { class: "small", text: "말하기나 쓰기에서 피드백을 받으면 여기에 쌓입니다." })));
+      return;
+    }
+    for (const e of state.entries) {
+      const d = new Date(e.ts);
+      const body = el("div", { class: "body" },
+        el("p", { class: "small muted", text: `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} · ${e.label || ""} · ${e.words || 0}단어${e.seconds ? ` · ${e.seconds}초` : ""}${e.accuracy != null ? ` · 읽기 ${e.accuracy}%` : ""}` }),
+        el("p", { class: "ans", text: e.answer || "" }));
+      if (e.feedback) { const fbBox = el("div", { class: "fb" }); renderFeedback(fbBox, e.feedback); body.append(fbBox); }
+      list.append(el("details", { class: "entry" },
+        el("summary", {}, el("span", { class: "kind" + (e.kind === "write" ? " write" : ""), text: e.kind === "write" ? "쓰기" : "말하기" }), el("span", { class: "ttl", text: e.title || "" }), el("span", { class: "sc", text: typeof e.score === "number" ? `${e.score}/10` : "–" })),
+        body));
+    }
+  }
+
+  // ---------- Alarm & settings ----------
+  const APP_URL = location.origin + location.pathname;
+  function nextAlarmDate() {
+    const s = state.settings; const [h, m] = s.alarmTime.split(":").map(Number);
+    const d = new Date(); d.setSeconds(0, 0);
+    for (let i = 0; i < 8; i++) {
+      const c = new Date(d); c.setDate(d.getDate() + i); c.setHours(h, m, 0, 0);
+      if (c > d && s.alarmDays.includes(c.getDay())) return c;
+    }
+    return null;
+  }
+  function gcalUrl() {
+    const s = state.settings; const start = nextAlarmDate();
+    if (!start) return null;
+    const end = new Date(start.getTime() + 20 * 60000);
+    const f = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+    const rule = s.alarmDays.length === 7 ? "RRULE:FREQ=DAILY" : "RRULE:FREQ=WEEKLY;BYDAY=" + s.alarmDays.slice().sort().map((i) => RRULE_DAYS[i]).join(",");
+    let tz = "Asia/Seoul"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch {}
+    const p = new URLSearchParams({
+      action: "TEMPLATE", text: "영어 말하기·쓰기 연습 (Daily English Drill)",
+      details: "오늘의 말하기 1문제 + 쓰기 1문제.\n" + APP_URL,
+      dates: `${f(start)}/${f(end)}`, ctz: tz, recur: rule
+    });
+    return "https://calendar.google.com/calendar/render?" + p.toString();
+  }
+  function renderAlarm() {
+    const s = state.settings;
+    $("alarm-time").value = s.alarmTime;
+    const wrap = $("alarm-days"); wrap.textContent = "";
+    [1, 2, 3, 4, 5, 6, 0].forEach((i) => {
+      const b = el("button", { type: "button", class: "bubble" + (s.alarmDays.includes(i) ? " on" : ""), text: DAYS_KO[i], "aria-pressed": String(s.alarmDays.includes(i)) });
+      b.addEventListener("click", () => {
+        s.alarmDays = s.alarmDays.includes(i) ? s.alarmDays.filter((x) => x !== i) : s.alarmDays.concat(i);
+        saveSettings(); renderAll();
+      });
+      wrap.append(b);
+    });
+    const url = gcalUrl(); const a = $("gcal-link");
+    if (url) { a.href = url; a.removeAttribute("aria-disabled"); a.style.opacity = ""; a.style.pointerEvents = ""; }
+    else { a.setAttribute("aria-disabled", "true"); a.style.opacity = ".45"; a.style.pointerEvents = "none"; }
+    document.querySelectorAll("#level-seg button").forEach((b) => b.classList.toggle("on", Number(b.dataset.level) === s.level));
+  }
+  $("alarm-time").addEventListener("change", (e) => { if (e.target.value) { state.settings.alarmTime = e.target.value; saveSettings(); renderAll(); } });
+  document.querySelectorAll("#level-seg button").forEach((b) => b.addEventListener("click", () => { state.settings.level = Number(b.dataset.level); saveSettings(); renderAll(); }));
+
+  // In-app chime when the app is open at alarm time.
+  let lastChime = "";
+  setInterval(() => {
+    const s = state.settings, now = new Date();
+    const key = dayKey(now) + " " + s.alarmTime;
+    if (s.alarmDays.includes(now.getDay()) && `${pad(now.getHours())}:${pad(now.getMinutes())}` === s.alarmTime && lastChime !== key) {
+      lastChime = key; beep(3); renderToday();
+    }
+  }, 15000);
+
+  function renderAll() { renderToday(); renderLog(); renderAlarm(); }
+
+  // ---------- Boot ----------
+  loadSpeak(dailySpeak());
+  loadWrite(dailyWrite());
+  renderKey();
+  renderAll();
+  if (!restoreHandoff()) { try { const t = sessionStorage.getItem("dedh.tab"); if (t && TABS.includes(t)) go(t); } catch {} }
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
