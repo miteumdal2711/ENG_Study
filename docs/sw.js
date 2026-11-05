@@ -1,5 +1,5 @@
 // App shell cache: files from cache with background refresh, pages from the network first. Bump VERSION on each release.
-const VERSION = "ded-v3";
+const VERSION = "ded-v5";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./vendor/anthropic.mjs", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {

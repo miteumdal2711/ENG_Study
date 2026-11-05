@@ -201,6 +201,10 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
 
   <!-- 오늘 -->
   <section class="tab" id="tab-today">
+    <div class="banner" id="notice" hidden>
+      <span id="notice-text"></span>
+      <button class="btn quiet" type="button" id="notice-close">닫기</button>
+    </div>
     <div class="banner" id="alarm-banner" hidden>
       <span id="alarm-banner-text"></span>
       <button class="btn quiet" type="button" data-go="speak">지금 시작</button>
@@ -982,6 +986,7 @@ ${FIELDS_TXT}`;
       box.append(el("div", {}, el("h3", { text: "외울 표현" }), el("ul", { class: "expr", style: "margin-top:6px" }, ...fb.key_expressions.map((x) => el("li", {}, el("b", { text: x.en || "" }), el("span", { class: "small muted", text: x.ko || "" }))))));
     }
     if (fb.next_tip_ko) box.append(el("p", { class: "hint", text: "다음 연습: " + fb.next_tip_ko }));
+    if (fb.raw_text) box.append(el("p", { class: "ans", style: "white-space:pre-wrap", text: fb.raw_text }));
   }
 
   async function runFeedback(kind) {
@@ -1027,8 +1032,21 @@ ${FIELDS_TXT}`;
   $("wr-feedback").addEventListener("click", () => runFeedback("write"));
 
 
-  // ---------- Free feedback through the Claude app (copy a ready-made request, open Claude) ----------
+  // ---------- Free feedback through the Claude app (share or copy a ready-made request) ----------
   const CLAUDE_URL = "https://claude.ai/new";
+  // On Android an intent link opens the Claude app itself instead of claude.ai in Chrome.
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  const CLAUDE_APP_URL = IS_ANDROID
+    ? "intent://claude.ai/new#Intent;scheme=https;package=com.anthropic.claude;S.browser_fallback_url=" + encodeURIComponent(CLAUDE_URL) + ";end"
+    : CLAUDE_URL;
+  function openClaudeApp() {
+    if (IS_ANDROID) location.href = CLAUDE_APP_URL; else window.open(CLAUDE_URL, "_blank", "noopener");
+  }
+  // The share sheet hands the request to the Claude app with the text already in the message box.
+  async function shareToClaude(text) {
+    if (!navigator.share) return false;
+    try { await navigator.share({ text }); return true; } catch { return false; }
+  }
   const OUT_FMT = `아래 형식으로 한국어로 피드백해 줘. 영어 표현과 모범 답안은 영어로 써 줘.
 1. 점수: 0~10점 중 몇 점인지와 예상 수준 (예: TOEIC 750~800 수준)
 2. 총평: 2~3문장
@@ -1036,7 +1054,10 @@ ${FIELDS_TXT}`;
 4. 고쳐 쓰기: 중요한 순서로 3~6개, "내 표현 → 더 나은 표현 (이유)" 형식
 5. 모범 답안: 내 아이디어를 살려 한 단계 높은 수준으로
 6. 외울 표현 3개 (영어 – 뜻)
-7. 다음 연습 팁 1개`;
+7. 다음 연습 팁 1개
+
+그리고 맨 마지막에, 위 피드백과 같은 내용을 아래 형식의 JSON 코드 블록(\`\`\`json) 하나로 덧붙여 줘. 내 연습 앱이 이 블록을 읽어서 기록해.
+{"score": 0~10 정수, "level_estimate": "예상 수준", "summary_ko": "총평", "strengths_ko": ["잘한 점"], "corrections": [{"original": "내 표현", "better": "더 나은 표현", "why_ko": "이유"}], "upgraded_answer": "모범 답안", "key_expressions": [{"en": "영어 표현", "ko": "뜻"}], "next_tip_ko": "다음 연습 팁"}`;
   function claudeRequest(kind, t, ans, secs) {
     const lvl = state.settings.level;
     if (kind === "speak") {
@@ -1068,7 +1089,10 @@ ${ans}
 
 ${OUT_FMT}`;
   }
-  const handoff = { speak: null, write: null };
+  // Pending hand-offs survive the app being closed while the user is in Claude.
+  const HANDOFF_KEY = "ded.handoff";
+  const handoff = Object.assign({ speak: null, write: null }, lsGet(HANDOFF_KEY, {}));
+  const saveHandoff = () => lsSet(HANDOFF_KEY, handoff);
   async function sendToClaude(kind) {
     const isSp = kind === "speak";
     const t = isSp ? state.spTask : state.wrTask;
@@ -1084,45 +1108,150 @@ ${OUT_FMT}`;
     let copied = false;
     try { await navigator.clipboard.writeText(text); copied = true; } catch {}
 
-    // Save the attempt once per answer; the score is filled in after Claude replies.
+    // Save the attempt once per answer; Claude's feedback is attached when it is brought back.
     let h = handoff[kind];
     if (!h || h.answer !== ans || h.taskId !== t.id) {
       const entry = { kind, taskId: t.id, taskType: t.type, title: t.title, label: t.label, prompt: t.text, answer: ans, words: words(ans), seconds: Math.round(secs) || null, via: "claude-app" };
       if (isSp && t.passage) entry.accuracy = showAccuracy().pct;
       addEntry(entry);
-      h = handoff[kind] = { id: entry.id, answer: ans, taskId: t.id };
+      h = handoff[kind] = { id: entry.id, answer: ans, taskId: t.id, task: t, text, ts: Date.now() };
+      saveHandoff();
     }
     renderHandoff(kind, text, copied);
-    if (copied) window.open(CLAUDE_URL, "_blank", "noopener");
+    if (navigator.share) await shareToClaude(text);
+    else if (copied) openClaudeApp();
   }
+
+  // Claude's reply ends with a ```json block (asked for in the request); fall back to the score line.
+  function parseClaudeFeedback(raw) {
+    if (!raw || !raw.trim()) return null;
+    const cands = [...raw.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)].map((m) => m[1]).reverse();
+    const a = raw.indexOf("{"), b = raw.lastIndexOf("}");
+    if (a >= 0 && b > a) cands.push(raw.slice(a, b + 1));
+    for (const c of cands) {
+      try {
+        const o = JSON.parse(c.trim().replace(/[“”]/g, '"'));
+        if (o && typeof o === "object" && "score" in o) {
+          const arr = (x) => (Array.isArray(x) ? x : []);
+          return {
+            score: Math.max(0, Math.min(10, Math.round(Number(o.score) || 0))),
+            level_estimate: String(o.level_estimate || ""), summary_ko: String(o.summary_ko || ""),
+            strengths_ko: arr(o.strengths_ko).map(String), corrections: arr(o.corrections), upgraded_answer: String(o.upgraded_answer || ""),
+            key_expressions: arr(o.key_expressions), next_tip_ko: String(o.next_tip_ko || ""), source: "claude-app"
+          };
+        }
+      } catch {}
+    }
+    const m = raw.match(/점수\s*[:：]?\s*\**\s*(\d{1,2})\s*(?:점|\/\s*10)/);
+    if (m && +m[1] <= 10) return { score: +m[1], raw_text: raw.replace(/```[\s\S]*?```/g, "").trim(), source: "claude-app" };
+    return null;
+  }
+  function importFeedback(kind, raw) {
+    const p = kind === "speak" ? "sp" : "wr";
+    const st = $(p + "-status");
+    const h = handoff[kind];
+    const e = h && state.entries.find((x) => x.id === h.id);
+    if (!e) { showStatus(st, "Claude 피드백을 붙일 연습을 찾지 못했어요. 먼저 'Claude로 피드백 받기'를 눌러 주세요.", true); return false; }
+    const fb = parseClaudeFeedback(raw);
+    if (!fb) { showStatus(st, "Claude 답변에서 피드백을 찾지 못했어요. Claude 답변 아래의 복사 버튼으로 답변 전체를 복사했는지 확인해 주세요.", true); return false; }
+    e.score = fb.score; e.feedback = fb;
+    lsSet("ded.entries", state.entries);
+    handoff[kind] = null; saveHandoff();
+    renderFeedback($(p + "-fb"), fb);
+    $(p + "-fb-wrap").hidden = false;
+    $(p + "-handoff").hidden = true;
+    renderAll();
+    showStatus(st, `Claude 피드백을 가져와 기록에 저장했어요 (${fb.score}/10).`);
+    $(p + "-fb-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+
   function renderHandoff(kind, text, copied) {
     const p = kind === "speak" ? "sp" : "wr";
     const box = $(p + "-handoff"); box.textContent = ""; box.hidden = false;
-    box.append(el("p", { class: "small", text: copied
-      ? "요청문을 복사했어요. Claude 새 대화에 붙여 넣고 보내세요. Claude가 열리지 않았다면 아래 버튼을 누르세요."
-      : "자동 복사가 안 됐어요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해서 Claude에 붙여 넣으세요." }));
+    box.append(el("p", { class: "small", text: navigator.share
+      ? "공유할 앱 목록에서 Claude를 고르면 요청문이 입력된 채로 Claude 앱이 열려요. 보내기만 누르세요. 목록에 Claude가 없으면 'Claude 앱 열기'를 누르고 입력창에 붙여 넣으세요."
+      : copied
+        ? "요청문을 복사했어요. Claude 새 대화 입력창을 길게 눌러 붙여 넣고 보내세요."
+        : "자동 복사가 안 됐어요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해서 Claude에 붙여 넣으세요." }));
     if (!copied) {
       const ta = el("textarea", { readonly: "", id: p + "-handoff-text" }); ta.value = text;
       box.append(ta); setTimeout(() => { ta.focus(); ta.select(); }, 50);
     }
-    const again = el("button", { class: "btn ghost", type: "button", text: "다시 복사" });
+    const again = el("button", { class: "btn ghost", type: "button", text: "요청문 복사" });
     again.addEventListener("click", async () => { try { await navigator.clipboard.writeText(text); again.textContent = "복사했어요"; } catch { again.textContent = "복사 안 됨"; } });
-    box.append(el("div", { class: "btn-row" }, el("a", { class: "btn", href: CLAUDE_URL, target: "_blank", rel: "noopener", text: "Claude 열기" }), again));
+    const open = el("a", Object.assign({ class: "btn ghost", href: CLAUDE_APP_URL, text: "Claude 앱 열기" }, IS_ANDROID ? {} : { target: "_blank", rel: "noopener" }));
+    const row = el("div", { class: "btn-row" });
+    if (navigator.share) {
+      const share = el("button", { class: "btn ghost", type: "button", text: "Claude 앱에 공유" });
+      share.addEventListener("click", () => shareToClaude(text));
+      row.append(share);
+    }
+    row.append(open, again);
+    box.append(row);
+
+    // Bring Claude's answer back: read the clipboard, or paste by hand when reading is refused.
+    box.append(el("p", { class: "small", text: "Claude가 답하면 답변 아래의 복사 버튼을 누르고 이 앱으로 돌아와 아래 버튼을 누르세요. 결과가 이 화면에 정리되고 기록에 저장돼요." }));
+    const get = el("button", { class: "btn", type: "button", text: "Claude 답변 가져오기" });
+    const pasteBox = el("textarea", { id: p + "-paste", placeholder: "자동으로 안 되면 여기를 길게 눌러 Claude 답변을 붙여 넣으세요" });
+    pasteBox.hidden = true;
+    const readBtn = el("button", { class: "btn quiet", type: "button", text: "붙여 넣은 답변 읽기" });
+    readBtn.hidden = true;
+    get.addEventListener("click", async () => {
+      let raw = "";
+      try { raw = await navigator.clipboard.readText(); } catch {}
+      if (raw && importFeedback(kind, raw)) return;
+      pasteBox.hidden = false; readBtn.hidden = false; pasteBox.focus();
+      if (!raw) showStatus($(p + "-status"), "클립보드를 읽지 못했어요. 아래 칸에 Claude 답변을 붙여 넣어 주세요.", true);
+    });
+    readBtn.addEventListener("click", () => importFeedback(kind, pasteBox.value));
+    pasteBox.addEventListener("paste", () => setTimeout(() => importFeedback(kind, pasteBox.value), 0));
+    box.append(el("div", { class: "btn-row" }, get), pasteBox, el("div", { class: "btn-row" }, readBtn));
+
+    // Last resort: type the score.
     const inp = el("input", { type: "number", id: p + "-score", min: "0", max: "10", inputmode: "numeric", placeholder: "0~10" });
     const save = el("button", { class: "btn quiet", type: "button", text: "점수 저장" });
-    const note = el("p", { class: "small muted", text: "Claude가 준 점수를 넣으면 기록과 평균 점수에 반영돼요." });
+    const note = el("p", { class: "small muted", text: "답변을 가져올 수 없을 때 점수만 넣어도 기록돼요." });
     save.addEventListener("click", () => {
       const v = Math.round(Number(inp.value));
       if (inp.value === "" || !(v >= 0 && v <= 10)) { note.textContent = "0부터 10 사이 숫자를 넣어 주세요."; return; }
-      const e = state.entries.find((x) => x.id === handoff[kind].id);
+      const e = handoff[kind] && state.entries.find((x) => x.id === handoff[kind].id);
       if (!e) { note.textContent = "이 연습 기록을 찾지 못했어요."; return; }
       e.score = v; lsSet("ded.entries", state.entries); renderAll();
       note.textContent = `${v}점으로 저장했어요.`;
     });
-    box.append(el("div", { class: "score-in" }, el("label", { for: p + "-score", text: "Claude가 준 점수" }), inp, save), note);
+    box.append(el("details", {}, el("summary", { class: "small", text: "점수만 직접 넣기" }),
+      el("div", { class: "score-in", style: "margin-top:8px" }, el("label", { for: p + "-score", text: "Claude가 준 점수" }), inp, save), note));
   }
   $("sp-claude").addEventListener("click", () => sendToClaude("speak"));
   $("wr-claude").addEventListener("click", () => sendToClaude("write"));
+
+  // On open: bring back an unfinished hand-off, and accept a Claude answer shared into the app.
+  function restoreHandoff() {
+    let latest = null;
+    for (const kind of ["speak", "write"]) {
+      const h = handoff[kind];
+      const e = h && state.entries.find((x) => x.id === h.id);
+      if (!h || !e || e.feedback || Date.now() - h.ts > 24 * 3600 * 1000 || !h.task) { handoff[kind] = null; continue; }
+      if (kind === "speak") { loadSpeak(h.task); $("sp-answer").value = h.answer; updateSpMeta(); }
+      else { loadWrite(h.task); $("wr-answer").value = h.answer; updateWrMeta(); }
+      renderHandoff(kind, h.text, true);
+      if (!latest || h.ts > handoff[latest].ts) latest = kind;
+    }
+    saveHandoff();
+    const q = new URLSearchParams(location.search);
+    const shared = [q.get("text"), q.get("title"), q.get("url")].filter(Boolean).join("\n");
+    if (q.has("text") || q.has("title") || q.has("url")) history.replaceState(null, "", location.pathname);
+    if (latest) {
+      go(latest);
+      if (shared) importFeedback(latest, shared);
+      return true;
+    }
+    if (shared) { go("today"); showNotice("공유받은 Claude 답변을 붙일 연습이 없어요. 말하기나 쓰기에서 'Claude로 피드백 받기'부터 눌러 주세요."); }
+    return !!shared;
+  }
+  function showNotice(msg) { $("notice-text").textContent = msg; $("notice").hidden = false; }
+  $("notice-close").addEventListener("click", () => { $("notice").hidden = true; });
 
   const SPEAK_TASK_SCHEMA = {
     type: "object", additionalProperties: false,
@@ -1297,7 +1426,7 @@ title is a short Korean title. text holds the full English task with directions.
   loadWrite(dailyWrite());
   renderKey();
   renderAll();
-  try { const t = sessionStorage.getItem("ded.tab"); if (t && TABS.includes(t)) go(t); } catch {}
+  if (!restoreHandoff()) { try { const t = sessionStorage.getItem("ded.tab"); if (t && TABS.includes(t)) go(t); } catch {} }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>
