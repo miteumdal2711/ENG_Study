@@ -1027,8 +1027,21 @@ ${FIELDS_TXT}`;
   $("wr-feedback").addEventListener("click", () => runFeedback("write"));
 
 
-  // ---------- Free feedback through the Claude app (copy a ready-made request, open Claude) ----------
+  // ---------- Free feedback through the Claude app (share or copy a ready-made request) ----------
   const CLAUDE_URL = "https://claude.ai/new";
+  // On Android an intent link opens the Claude app itself instead of claude.ai in Chrome.
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  const CLAUDE_APP_URL = IS_ANDROID
+    ? "intent://claude.ai/new#Intent;scheme=https;package=com.anthropic.claude;S.browser_fallback_url=" + encodeURIComponent(CLAUDE_URL) + ";end"
+    : CLAUDE_URL;
+  function openClaudeApp() {
+    if (IS_ANDROID) location.href = CLAUDE_APP_URL; else window.open(CLAUDE_URL, "_blank", "noopener");
+  }
+  // The share sheet hands the request to the Claude app with the text already in the message box.
+  async function shareToClaude(text) {
+    if (!navigator.share) return false;
+    try { await navigator.share({ text }); return true; } catch { return false; }
+  }
   const OUT_FMT = `아래 형식으로 한국어로 피드백해 줘. 영어 표현과 모범 답안은 영어로 써 줘.
 1. 점수: 0~10점 중 몇 점인지와 예상 수준 (예: TOEIC 750~800 수준)
 2. 총평: 2~3문장
@@ -1093,21 +1106,32 @@ ${OUT_FMT}`;
       h = handoff[kind] = { id: entry.id, answer: ans, taskId: t.id };
     }
     renderHandoff(kind, text, copied);
-    if (copied) window.open(CLAUDE_URL, "_blank", "noopener");
+    if (navigator.share) await shareToClaude(text);
+    else if (copied) openClaudeApp();
   }
   function renderHandoff(kind, text, copied) {
     const p = kind === "speak" ? "sp" : "wr";
     const box = $(p + "-handoff"); box.textContent = ""; box.hidden = false;
-    box.append(el("p", { class: "small", text: copied
-      ? "요청문을 복사했어요. Claude 새 대화에 붙여 넣고 보내세요. Claude가 열리지 않았다면 아래 버튼을 누르세요."
-      : "자동 복사가 안 됐어요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해서 Claude에 붙여 넣으세요." }));
+    box.append(el("p", { class: "small", text: navigator.share
+      ? "공유할 앱 목록에서 Claude를 고르면 요청문이 입력된 채로 Claude 앱이 열려요. 보내기만 누르세요. 목록에 Claude가 없으면 'Claude 앱 열기'를 누르고 입력창에 붙여 넣으세요. 요청문은 복사해 뒀어요."
+      : copied
+        ? "요청문을 복사했어요. Claude 새 대화 입력창을 길게 눌러 붙여 넣고 보내세요."
+        : "자동 복사가 안 됐어요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해서 Claude에 붙여 넣으세요." }));
     if (!copied) {
       const ta = el("textarea", { readonly: "", id: p + "-handoff-text" }); ta.value = text;
       box.append(ta); setTimeout(() => { ta.focus(); ta.select(); }, 50);
     }
     const again = el("button", { class: "btn ghost", type: "button", text: "다시 복사" });
     again.addEventListener("click", async () => { try { await navigator.clipboard.writeText(text); again.textContent = "복사했어요"; } catch { again.textContent = "복사 안 됨"; } });
-    box.append(el("div", { class: "btn-row" }, el("a", { class: "btn", href: CLAUDE_URL, target: "_blank", rel: "noopener", text: "Claude 열기" }), again));
+    const open = el("a", Object.assign({ class: "btn" + (navigator.share ? " ghost" : ""), href: CLAUDE_APP_URL, text: "Claude 앱 열기" }, IS_ANDROID ? {} : { target: "_blank", rel: "noopener" }));
+    const row = el("div", { class: "btn-row" });
+    if (navigator.share) {
+      const share = el("button", { class: "btn", type: "button", text: "Claude 앱에 공유" });
+      share.addEventListener("click", () => shareToClaude(text));
+      row.append(share);
+    }
+    row.append(open, again);
+    box.append(row);
     const inp = el("input", { type: "number", id: p + "-score", min: "0", max: "10", inputmode: "numeric", placeholder: "0~10" });
     const save = el("button", { class: "btn quiet", type: "button", text: "점수 저장" });
     const note = el("p", { class: "small muted", text: "Claude가 준 점수를 넣으면 기록과 평균 점수에 반영돼요." });
