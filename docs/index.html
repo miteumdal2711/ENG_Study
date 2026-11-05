@@ -276,7 +276,7 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
         <button class="btn" type="button" id="sp-start">준비 시간부터 시작</button>
         <button class="btn ghost" type="button" id="sp-stop" disabled>정지</button>
       </div>
-      <label class="check"><input type="checkbox" id="keep-audio"> <span>내 목소리도 녹음해서 다시 듣기</span></label>
+      <label class="check"><input type="checkbox" id="keep-audio"> <span>내 목소리도 녹음해서 다시 듣기<br><span class="small muted">일부 휴대폰은 켜면 받아쓰기가 안 돼요. 받아쓰기가 안 되면 자동으로 꺼져요.</span></span></label>
       <p class="interim" id="sp-interim"></p>
       <textarea id="sp-answer" placeholder="녹음하면 말한 내용이 여기에 영어로 받아쓰기됩니다" spellcheck="false" autocapitalize="sentences"></textarea>
       <div class="meta-row"><span id="sp-words">0 단어</span><span id="sp-wpm"></span></div>
@@ -534,12 +534,13 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
 
   // ---------- State (localStorage) ----------
   const state = {
-    settings: Object.assign({ level: 800, alarmTime: "07:30", alarmDays: [0, 1, 2, 3, 4, 5, 6], apiKey: "", keepAudio: true }, lsGet("ded.settings", {})),
+    settings: Object.assign({ level: 800, alarmTime: "07:30", alarmDays: [0, 1, 2, 3, 4, 5, 6], apiKey: "", keepAudio: false }, lsGet("ded.settings", {})),
     entries: lsGet("ded.entries", []),
     spOffset: 0, wrOffset: 0,
     spTask: null, wrTask: null
   };
   function saveSettings() { lsSet("ded.settings", state.settings); }
+  if ((state.settings.v || 1) < 2) { state.settings.keepAudio = false; state.settings.v = 2; saveSettings(); }
   function addEntry(e) {
     e.ts = Date.now(); e.day = dayKey(); e.id = "e" + e.ts;
     state.entries.unshift(e);
@@ -645,21 +646,38 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const rec = {
     active: false, recog: null, committed: "", session: "", media: null, stream: null, chunks: [], audioUrl: null,
+    heard: false, listening: false, noSpeech: 0, watch: null,
     text() { return [this.committed, this.session].filter(Boolean).join(" ").trim(); },
     async start() {
       this.active = true; this.committed = ""; this.session = "";
+      this.heard = false; this.listening = false; this.noSpeech = 0;
       $("sp-answer").value = ""; $("sp-interim").textContent = "";
       if (this.audioUrl) { URL.revokeObjectURL(this.audioUrl); this.audioUrl = null; }
       $("sp-audio").hidden = true;
       setMicUi(true);
       if (SR) this.startRecog();
       if (state.settings.keepAudio || !SR) await this.startMedia();
-      if (!SR) showStatus($("sp-status"), "이 브라우저는 실시간 받아쓰기를 지원하지 않아요. Chrome으로 열거나, 녹음 후 키보드 마이크로 직접 입력하세요.", true);
+      if (!SR) showStatus($("sp-status"), "이 브라우저는 실시간 받아쓰기를 지원하지 않아요. Chrome으로 열거나, 입력창을 누르고 키보드 마이크로 말하세요.", true);
+      // Many Android phones give the mic to only one of recording and dictation. If dictation hears
+      // nothing while recording runs, drop the recording and keep dictation.
+      clearTimeout(this.watch);
+      if (SR && this.media) this.watch = setTimeout(() => {
+        if (!this.active || !this.media || this.heard) return;
+        this.stopMedia(false);
+        state.settings.keepAudio = false; saveSettings(); $("keep-audio").checked = false;
+        try { this.recog && this.recog.abort(); } catch {}
+        showStatus($("sp-status"), "이 휴대폰은 녹음과 받아쓰기를 동시에 못 해서 목소리 녹음을 껐어요. 계속 말하세요.", true);
+      }, 5000);
     },
     startRecog() {
       const r = new SR();
       r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onaudiostart = () => {
+        this.listening = true;
+        if (this.active) $("rec-sub").textContent = "듣고 있어요. 다 말했으면 정사각형 버튼을 누르세요.";
+      };
       r.onresult = (e) => {
+        this.heard = true; this.noSpeech = 0;
         // Android Chrome can repeat earlier text inside later final results, so merge by prefix.
         let acc = "", interim = "";
         for (let i = 0; i < e.results.length; i++) {
@@ -674,21 +692,33 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
         updateSpMeta();
       };
       r.onerror = (e) => {
+        if (r !== this.recog) return;
+        const st = $("sp-status");
         if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-          showStatus($("sp-status"), "마이크를 쓸 수 없어요. Chrome 주소창 왼쪽 아이콘 › 권한에서 마이크를 허용한 뒤 다시 눌러 주세요.", true);
+          showStatus(st, "받아쓰기 권한이 없어요. 휴대폰 설정 › 애플리케이션 › Chrome › 권한에서 마이크를 허용하고, Google 앱이 설치돼 있는지 확인해 주세요.", true);
           stopAnswer();
-        } else if (e.error === "audio-capture" && this.media) {
-          // Some phones can't share the mic between recording and recognition: keep recognition.
-          this.stopMedia(false);
-          state.settings.keepAudio = false; saveSettings(); $("keep-audio").checked = false;
-          showStatus($("sp-status"), "이 휴대폰은 받아쓰기와 목소리 녹음을 동시에 못 해서 목소리 녹음을 껐어요.", true);
+        } else if (e.error === "audio-capture") {
+          if (this.media) {
+            this.stopMedia(false);
+            state.settings.keepAudio = false; saveSettings(); $("keep-audio").checked = false;
+            showStatus(st, "이 휴대폰은 녹음과 받아쓰기를 동시에 못 해서 목소리 녹음을 껐어요. 계속 말하세요.", true);
+          } else {
+            showStatus(st, "다른 앱이 마이크를 쓰고 있어서 받아쓰기를 못 해요. 통화나 녹음 앱을 닫고 다시 시도해 주세요.", true);
+          }
         } else if (e.error === "network") {
-          showStatus($("sp-status"), "받아쓰기는 인터넷 연결이 필요해요.", true);
+          showStatus(st, "받아쓰기는 인터넷 연결이 필요해요. 연결을 확인해 주세요.", true);
+        } else if (e.error === "language-not-supported") {
+          showStatus(st, "이 휴대폰의 음성 인식이 영어를 지원하지 않아요. Google 앱 › 설정 › 음성 › 언어에 English (US)를 추가해 주세요.", true);
+          stopAnswer();
+        } else if (e.error === "no-speech") {
+          if (!this.media && ++this.noSpeech >= 2) showStatus(st, "목소리가 들리지 않아요. 휴대폰 마이크 가까이에서 또렷하게 말해 보세요.", true);
+        } else if (e.error !== "aborted") {
+          showStatus(st, `받아쓰기에 문제가 생겼어요 (${e.error}). 다시 녹음하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.`, true);
         }
       };
       r.onend = () => {
         if (this.session) { this.committed = this.text(); this.session = ""; }
-        if (this.active) { try { r.start(); } catch {} }
+        if (this.active && r === this.recog) { try { r.start(); } catch {} }
       };
       this.recog = r;
       try { r.start(); } catch {}
@@ -696,29 +726,32 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
     async startMedia() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (!this.active) { this.stream.getTracks().forEach((t) => t.stop()); return; }
+        if (!this.active) { this.stream.getTracks().forEach((t) => t.stop()); this.stream = null; return; }
         this.chunks = [];
-        this.media = new MediaRecorder(this.stream);
-        this.media.ondataavailable = (e) => { if (e.data && e.data.size) this.chunks.push(e.data); };
-        this.media.onstop = () => {
+        const m = new MediaRecorder(this.stream);
+        m.ondataavailable = (e) => { if (e.data && e.data.size) this.chunks.push(e.data); };
+        m.onstop = () => {
           if (this.chunks.length) {
-            this.audioUrl = URL.createObjectURL(new Blob(this.chunks, { type: this.media?.mimeType || "audio/webm" }));
+            this.audioUrl = URL.createObjectURL(new Blob(this.chunks, { type: m.mimeType || "audio/webm" }));
             $("sp-audio").src = this.audioUrl; $("sp-audio").hidden = false;
           }
         };
-        this.media.start();
+        m.start();
+        this.media = m;
       } catch {
         if (!SR) { showStatus($("sp-status"), "마이크를 쓸 수 없어요. 브라우저 설정에서 마이크 권한을 허용해 주세요.", true); stopAnswer(); }
       }
     },
     stopMedia(keepResult = true) {
-      try { if (this.media && this.media.state !== "inactive") { if (!keepResult) this.media.onstop = null; this.media.stop(); } } catch {}
+      const m = this.media; this.media = null;
+      try { if (m && m.state !== "inactive") { if (!keepResult) m.onstop = null; m.stop(); } } catch {}
       try { this.stream && this.stream.getTracks().forEach((t) => t.stop()); } catch {}
       this.stream = null;
     },
     stop() {
       if (!this.active) return;
       this.active = false;
+      clearTimeout(this.watch);
       try { this.recog && this.recog.stop(); } catch {}
       this.recog = null;
       this.stopMedia(true);
@@ -727,6 +760,11 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
       setMicUi(false);
     }
   };
+  // Shown when the answer box is empty; explains what to try instead of only asking to record.
+  function noSpeechAnswerMsg() {
+    if (rec.audioUrl) return "녹음은 됐지만 받아쓰기된 글이 없어요. '내 목소리도 녹음해서 다시 듣기'를 끄고 다시 녹음하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.";
+    return "답변이 비어 있어요. 마이크 버튼을 누르고 영어로 말하거나, 입력창을 누르고 키보드 마이크로 말해 주세요.";
+  }
   function setMicUi(live) {
     $("sp-mic").classList.toggle("live", live);
     $("sp-mic").setAttribute("aria-label", live ? "녹음 정지" : "녹음 시작");
@@ -955,7 +993,7 @@ ${FIELDS_TXT}`;
     if (timer.phase === "prep" || timer.phase === "answer") timer.stop("종료");
     if (isSp) rec.stop();
     const ans = $(isSp ? "sp-answer" : "wr-answer").value.trim();
-    if (words(ans) < 3) { showStatus(st, isSp ? "먼저 마이크 버튼을 누르고 영어로 답해 주세요." : "답안을 먼저 작성하세요.", true); return; }
+    if (words(ans) < 3) { showStatus(st, isSp ? noSpeechAnswerMsg() : "답안을 먼저 작성하세요.", true); return; }
     const secs = timer.answerSecs;
     let accuracy = null;
     if (isSp && t.passage) accuracy = showAccuracy().pct;
@@ -1039,7 +1077,7 @@ ${OUT_FMT}`;
     if (timer.phase === "prep" || timer.phase === "answer") timer.stop("종료");
     if (isSp) rec.stop();
     const ans = $(isSp ? "sp-answer" : "wr-answer").value.trim();
-    if (words(ans) < 3) { showStatus(st, isSp ? "먼저 마이크 버튼을 누르고 영어로 답해 주세요." : "답안을 먼저 작성하세요.", true); return; }
+    if (words(ans) < 3) { showStatus(st, isSp ? noSpeechAnswerMsg() : "답안을 먼저 작성하세요.", true); return; }
     showStatus(st, "");
     const secs = timer.answerSecs;
     const text = claudeRequest(kind, t, ans, secs);
