@@ -27,6 +27,7 @@ img { max-width: 100%; }
   --omr: #0F766E;
   --on-omr: #FFFFFF;
   --ok: #1E8558;
+  --danger: #B42318;
   --ok-soft: #E3F4EB;
   --warn: #9A6408;
   --line: #E3E6EE;
@@ -40,7 +41,7 @@ img { max-width: 100%; }
   :root:not([data-theme="light"]) {
     --paper: #0F131B; --surface: #171C27; --ink: #E8EBF2; --muted: #9AA3B6;
     --rule: #1F4A47; --soft: #10262A; --omr: #3CC7B8; --on-omr: #06201D;
-    --ok: #4CC98E; --ok-soft: #12291E; --warn: #E2AE4A; --line: #262D3B;
+    --ok: #4CC98E; --ok-soft: #12291E; --danger: #F97066; --warn: #E2AE4A; --line: #262D3B;
     --shadow: 0 1px 2px rgba(0,0,0,.3);
     color-scheme: dark;
   }
@@ -48,7 +49,7 @@ img { max-width: 100%; }
 :root[data-theme="dark"] {
   --paper: #0F131B; --surface: #171C27; --ink: #E8EBF2; --muted: #9AA3B6;
   --rule: #1F4A47; --soft: #10262A; --omr: #3CC7B8; --on-omr: #06201D;
-  --ok: #4CC98E; --ok-soft: #12291E; --warn: #E2AE4A; --line: #262D3B;
+  --ok: #4CC98E; --ok-soft: #12291E; --danger: #F97066; --warn: #E2AE4A; --line: #262D3B;
   --shadow: 0 1px 2px rgba(0,0,0,.3);
   color-scheme: dark;
 }
@@ -99,6 +100,9 @@ button.bubble { cursor: pointer; }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
 .btn.quiet { background: var(--soft); color: var(--omr); }
+.btn.danger { background: var(--danger); color: #FFFFFF; }
+.btn.danger-text { color: var(--danger); border-color: var(--line); }
+.confirm { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn-row .btn { flex: 1 1 auto; }
 
@@ -403,6 +407,7 @@ input[type="password"], input[type="text"].key { width: 100%; font-family: var(-
       </div>
       <input type="file" id="import-file" accept="application/json,.json" hidden>
       <p class="status" id="backup-status" hidden></p>
+      <div id="clear-all"></div>
     </div>
   </section>
 </div>
@@ -1357,10 +1362,50 @@ title is a short Korean title. text holds the full English task with directions.
         el("p", { class: "small muted", text: `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} · ${e.label || ""} · ${e.words || 0}단어${e.seconds ? ` · ${e.seconds}초` : ""}${e.accuracy != null ? ` · 읽기 ${e.accuracy}%` : ""}` }),
         el("p", { class: "ans", text: e.answer || "" }));
       if (e.feedback) { const fbBox = el("div", { class: "fb" }); renderFeedback(fbBox, e.feedback); body.append(fbBox); }
+      body.append(confirmButton("이 기록 삭제", "이 기록을 지울까요? 되돌릴 수 없어요.", () => deleteEntries((x) => x.id === e.id)));
       list.append(el("details", { class: "entry" },
         el("summary", {}, el("span", { class: "kind" + (e.kind === "write" ? " write" : ""), text: e.kind === "write" ? "쓰기" : "말하기" }), el("span", { class: "ttl", text: e.title || "" }), el("span", { class: "sc", text: typeof e.score === "number" ? `${e.score}/10` : "–" })),
         body));
     }
+  }
+
+  // A delete button that asks again inside the page before acting.
+  function confirmButton(label, question, onConfirm) {
+    const wrap = el("div", { class: "confirm" });
+    const ask = () => {
+      wrap.textContent = "";
+      const yes = el("button", { class: "btn danger", type: "button", text: "삭제" });
+      const no = el("button", { class: "btn ghost", type: "button", text: "취소" });
+      yes.addEventListener("click", onConfirm);
+      no.addEventListener("click", idle);
+      wrap.append(el("p", { class: "small", text: question }), el("div", { class: "btn-row" }, yes, no));
+    };
+    const idle = () => {
+      wrap.textContent = "";
+      const b = el("button", { class: "btn ghost danger-text", type: "button", text: label });
+      b.addEventListener("click", ask);
+      wrap.append(b);
+    };
+    idle();
+    return wrap;
+  }
+  function deleteEntries(match) {
+    const before = state.entries.length;
+    const gone = new Set(state.entries.filter(match).map((x) => x.id));
+    state.entries = state.entries.filter((x) => !gone.has(x.id));
+    lsSet("dedh.entries", state.entries);
+    for (const k of ["speak", "write"]) if (handoff[k] && gone.has(handoff[k].id)) { handoff[k] = null; $(k === "speak" ? "sp-handoff" : "wr-handoff").hidden = true; }
+    saveHandoff();
+    renderAll();
+    return before - state.entries.length;
+  }
+  function renderClearAll() {
+    const box = $("clear-all"); box.textContent = "";
+    if (!state.entries.length) return;
+    box.append(confirmButton(`기록 전체 삭제 (${state.entries.length}개)`, `기록 ${state.entries.length}개를 모두 지울까요? 되돌릴 수 없으니 필요하면 먼저 내보내 두세요.`, () => {
+      const n = deleteEntries(() => true);
+      showStatus($("backup-status"), `기록 ${n}개를 지웠어요.`);
+    }));
   }
 
   // ---------- Alarm & settings ----------
@@ -1418,7 +1463,7 @@ title is a short Korean title. text holds the full English task with directions.
     }
   }, 15000);
 
-  function renderAll() { renderToday(); renderLog(); renderAlarm(); }
+  function renderAll() { renderToday(); renderLog(); renderAlarm(); renderClearAll(); }
 
   // ---------- Boot ----------
   loadSpeak(dailySpeak());
